@@ -1,0 +1,16 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+			"file_exclude_patterns":
+            [
+	            "*.d",
+	           	"*.o",
+	           	"*.a",
+	           	"test_unit_test",
+	           	"*.sublime-workspace"
+            ]
+		}
+	]
+}
