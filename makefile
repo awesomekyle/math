@@ -37,11 +37,14 @@ endif
 
 _DEPS := $(OBJECTS:.o=.d) $(TEST_OBJECTS:.o=.d)
 
-.PHONY: clean test
+.PHONY: clean test external
 
-all: $(TARGET) test
+all: external $(TARGET) test
 
-$(TARGET) : $(TEST_OBJECTS)
+external:
+	$(MAKE) -C external/unit_test lib
+
+$(TARGET) : $(TEST_OBJECTS) external
 	@echo "Linking $@..."
 	$(SILENT) $(CXX) $(LDFLAGS) $(TEST_OBJECTS) $(LIBRARY) -o $(TARGET)
 
@@ -59,6 +62,7 @@ test: $(TARGET)
 
 clean:
 	@echo "Cleaning..."
+	$(SILENT) $(MAKE) -C external/unit_test $@
 	$(SILENT) $(RM) -f -r $(OBJECTS) $(TEST_OBJECTS) $(_DEPS)
 	$(SILENT) $(RM) $(LIBRARY) $(TARGET)
 
