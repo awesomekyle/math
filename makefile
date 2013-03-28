@@ -13,13 +13,13 @@ TEST_SRCS = test/main.c \
 #
 # Compilation control
 #
-INCLUDES 	+= 	-Isrc -Iexternal/unit_test/src
+INCLUDES 	+= 	-Isrc -Iexternal/unit_test/src -Iexternal
 DEFINES		+=
 LIBS		+= -Lexternal/unit_test -lunittest
 
 C_STD	= -std=c89
 CXX_STD	= -std=c++98
-WARNINGS	+=	 -Wall -Wextra -pedantic -Wshadow -Wpointer-arith \
+WARNINGS	+=	 -Wall -Wextra -pedantic -Wpointer-arith \
 				 -Wwrite-strings  -Wredundant-decls -Winline -Wno-long-long \
 				 -Wuninitialized -Wconversion -Werror
 CPPFLAGS += -MMD -MP $(DEFINES) $(INCLUDES) $(WARNINGS) -g
