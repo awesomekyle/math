@@ -14,11 +14,13 @@ typedef struct Vec2
 #ifdef __cplusplus
 extern "C" { // C linkage
     typedef const Vec2& VEC2_INPUT;
+    #define INLINE inline
 #else
     typedef Vec2 VEC2_INPUT;
+    #define INLINE static __inline
 #endif
 
-Vec2 vec2_add(VEC2_INPUT a, VEC2_INPUT b)
+INLINE Vec2 vec2_add(VEC2_INPUT a, VEC2_INPUT b)
 {
     Vec2 res;
     res.x = a.x + b.x;
