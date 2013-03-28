@@ -7,7 +7,7 @@ TARGET = ./test_math
 # Test sources
 #
 TEST_SRCS = test/main.c \
-			test/math_test.cpp \
+			test/math_test_glm.cpp \
 			test/math_test_c.c
 
 #
