@@ -66,6 +66,14 @@ struct Vec2Fixture
     }
     ~Vec2Fixture() { }
 };
+TEST_FIXTURE(Vec2Fixture, Vec2Creation)
+{
+    float x = _rand_float(-500.0f, 500.0f),
+          y = _rand_float(-500.0f, 500.0f);
+    a = glm::vec2(x,y);
+    i = vec2_create(x,y);
+    CHECK_EQUAL_VEC2((float*)&a, (float*)&i);
+}
 TEST_FIXTURE(Vec2Fixture, Vec2Zero)
 {
     a = glm::vec2(0.0f);

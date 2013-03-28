@@ -56,6 +56,13 @@ extern "C" { // C linkage
  * Vec2                                                                       *
 \******************************************************************************/
 static const Vec2 vec2_zero = {0.0f,0.0f};
+INLINE Vec2 vec2_create(float x, float y)
+{
+    Vec2 r;
+    r.x = x;
+    r.y = y;
+    return r;
+}
 /* Basic aritmatic */
 INLINE Vec2 vec2_add(VEC2_INPUT a, VEC2_INPUT b)
 {
