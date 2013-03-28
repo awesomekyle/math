@@ -174,6 +174,12 @@ int _register_test(test_func_t* func)
     _test_funcs[_num_tests] = func;
     return _num_tests++;
 }
+int __ignore_test(test_func_t* func)
+{
+    _test_funcs[_num_tests] = _ignore_test;
+    return _num_tests++;
+    (void)sizeof(func);
+}
 void _ignore_test(void)
 {
     _current_result = kResultIgnore;

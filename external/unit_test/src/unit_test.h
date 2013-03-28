@@ -43,7 +43,7 @@ typedef void (test_func_t)(void);
             TEST_##test_name test;                                                                     \
             test.test();                                                                               \
         }                                                                                              \
-        static int _##fixture##_##test_name##_register = _register_test(&_ignore_test);   \
+        static int _##fixture##_##test_name##_register = __ignore_test(&TEST_##fixture##_##test_name); \
         void TEST_##test_name::test(void )
 
     extern "C" { // Use C linkage
@@ -74,6 +74,7 @@ typedef void (test_func_t)(void);
 
 int _register_test(test_func_t* func);
 void _ignore_test(void);
+int __ignore_test(test_func_t* func);
 
 /** Checking functions
  */
