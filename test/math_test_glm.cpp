@@ -201,6 +201,15 @@ struct Vec3Fixture
     }
     ~Vec3Fixture() { }
 };
+TEST_FIXTURE(Vec3Fixture, Vec3Creation)
+{
+    float x = _rand_float(-500.0f, 500.0f),
+          y = _rand_float(-500.0f, 500.0f),
+          z = _rand_float(-500.0f, 500.0f);
+    a = glm::vec3(x,y,z);
+    i = vec3_create(x,y,z);
+    CHECK_EQUAL_VEC3((float*)&a, (float*)&i);
+}
 TEST_FIXTURE(Vec3Fixture, Vec3Zero)
 {
     a = glm::vec3(0.0f);
@@ -338,6 +347,16 @@ struct Vec4Fixture
     }
     ~Vec4Fixture() { }
 };
+TEST_FIXTURE(Vec4Fixture, Vec4Creation)
+{
+    float x = _rand_float(-500.0f, 500.0f),
+          y = _rand_float(-500.0f, 500.0f),
+          z = _rand_float(-500.0f, 500.0f),
+          w = _rand_float(-500.0f, 500.0f);
+    a = glm::vec4(x,y,z,w);
+    i = vec4_create(x,y,z,w);
+    CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
+}
 TEST_FIXTURE(Vec4Fixture, Vec4Zero)
 {
     a = glm::vec4(0.0f);

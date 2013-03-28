@@ -190,6 +190,14 @@ INLINE Vec2 vec2_negate(VEC2_INPUT v)
  * Vec3                                                                       *
 \******************************************************************************/
 static const Vec3 vec3_zero = {0.0f,0.0f,0.0f};
+INLINE Vec3 vec3_create(float x, float y, float z)
+{
+    Vec3 r;
+    r.x = x;
+    r.y = y;
+    r.z = z;
+    return r;
+}
 /* Basic aritmatic */
 INLINE Vec3 vec3_add(VEC3_INPUT a, VEC3_INPUT b)
 {
@@ -343,6 +351,15 @@ INLINE Vec3 vec3_cross(VEC3_INPUT a, VEC3_INPUT b)
  * Vec4                                                                       *
 \******************************************************************************/
 static const Vec4 vec4_zero = {0.0f,0.0f,0.0f,0.0f};
+INLINE Vec4 vec4_create(float x, float y, float z, float w)
+{
+    Vec4 r;
+    r.x = x;
+    r.y = y;
+    r.z = z;
+    r.w = w;
+    return r;
+}
 /* Basic aritmatic */
 INLINE Vec4 vec4_add(VEC4_INPUT a, VEC4_INPUT b)
 {
