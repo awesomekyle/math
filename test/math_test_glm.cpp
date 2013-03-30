@@ -4,6 +4,7 @@
 #include "unit_test.h"
 
 #include "vec_math.h"
+#define GLM_FORCE_RADIANS
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -495,17 +496,45 @@ TEST_FIXTURE(Mat3Fixture, Mat3Scale)
           y = _rand_float(0.1f, 100.0f),
           z = _rand_float(0.1f, 100.0f);
     a = (glm::mat3)glm::scale(glm::mat4(), glm::vec3(x,y,z));
-    i = mat3_scale(x,y,z);
+    i = mat3_scalef(x,y,z);
     CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
 }
-IGNORE_TEST_FIXTURE(Mat3Fixture, Mat3Rotate)
+TEST_FIXTURE(Mat3Fixture, Mat3RotateX)
+{
+    a = (glm::mat3)glm::rotate(glm::mat4(), s, glm::vec3(1,0,0));
+    i = mat3_rotation_x(s);
+    CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat3Fixture, Mat3RotateY)
+{
+    a = (glm::mat3)glm::rotate(glm::mat4(), s, glm::vec3(0,1,0));
+    i = mat3_rotation_y(s);
+    CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat3Fixture, Mat3RotateZ)
+{
+    a = (glm::mat3)glm::rotate(glm::mat4(), s, glm::vec3(0,0,1));
+    i = mat3_rotation_z(s);
+    CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat3Fixture, Mat3Rotate)
 {
     float x = _rand_float(0.1f, 100.0f),
           y = _rand_float(0.1f, 100.0f),
           z = _rand_float(0.1f, 100.0f);
     a = (glm::mat3)glm::rotate(glm::mat4(), s, glm::vec3(x,y,z));
-    //i = mat3_rotate(x,y,z);
+    i = mat3_rotation_axis(vec3_create(x,y,z), s);
     CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat3Fixture, Mat3Multiply)
+{
+    a = c*b; // NOTE: These are reversed because the library is column major, not row
+    i = mat3_multiply(j,k);
+    CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat3Fixture, Mat3Determinant)
+{
+    CHECK_EQUAL_FLOAT(glm::determinant(a), mat3_determinant(i));
 }
 
 } // anonymous namespace

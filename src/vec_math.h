@@ -52,6 +52,9 @@ extern "C" { // C linkage
     #define INLINE static __inline
 #endif
 
+INLINE float rad_to_deg(float r) { return kRadToDeg*r; }
+INLINE float deg_to_rad(float d) { return kDegToRad*d; }
+
 /******************************************************************************\
  * Vec2                                                                       *
 \******************************************************************************/
@@ -516,13 +519,110 @@ static const Mat3 mat3_identity = {
     { 0.0f, 1.0f, 0.0f },
     { 0.0f, 0.0f, 1.0f },
 };
-INLINE Mat3 mat3_scale(float x, float y, float z)
+INLINE Mat3 mat3_scalef(float x, float y, float z)
 {
     Mat3 r = mat3_identity;
     r.r0.x = x;
     r.r1.y = y;
     r.r2.z = z;
     return r;
+}
+INLINE Mat3 mat3_scale(VEC3_INPUT v)
+{
+    return mat3_scalef(v.x,v.y,v.z);
+}
+INLINE Mat3 mat3_rotation_x(float rad)
+{
+    float   c = cosf( rad );
+    float   s = sinf( rad );
+    Mat3    r = mat3_identity;
+    r.r1.y = c;
+    r.r1.z = s;
+    r.r2.y = -s;
+    r.r2.z = c;
+    return r;
+}
+INLINE Mat3 mat3_rotation_y(float rad)
+{
+    float   c = cosf( rad );
+    float   s = sinf( rad );
+    Mat3    r = mat3_identity;
+    r.r0.x = c;
+    r.r0.z = -s;
+    r.r2.x = s;
+    r.r2.z = c;
+    return r;
+}
+INLINE Mat3 mat3_rotation_z(float rad)
+{
+    float   c = cosf( rad );
+    float   s = sinf( rad );
+    Mat3    r = mat3_identity;
+    r.r0.x = c;
+    r.r0.y = s;
+    r.r1.x = -s;
+    r.r1.y = c;
+    return r;
+}
+INLINE Mat3 mat3_rotation_axis(VEC3_INPUT axis, float rad)
+{
+    Vec3 normAxis = vec3_normalize(axis);
+    float c = cosf(rad);
+    float s = sinf(rad);
+    float t = 1 - c;
+
+    float x = normAxis.x;
+    float y = normAxis.y;
+    float z = normAxis.z;
+
+    Mat3 m;
+
+    m.r0.x = (t * x * x) + c;
+    m.r0.y = (t * x * y) + s * z;
+    m.r0.z = (t * x * z) - s * y;
+
+    m.r1.x = (t * x * y) - (s * z);
+    m.r1.y = (t * y * y) + c;
+    m.r1.z = (t * y * z) + (s * x);
+
+    m.r2.x = (t * x * z) + (s * y);
+    m.r2.y = (t * y * z) - (s * x);
+    m.r2.z = (t * z * z) + c;
+
+    return m;
+}
+#define MTX3_INDEX(f,r,c) ((f)[(r*3)+c])
+INLINE Mat3 mat3_multiply(MAT3_INPUT a, MAT3_INPUT b)
+{
+    Mat3 m = mat3_identity;
+
+    const float* left     = &a.r0.x;
+    const float* right    = &b.r0.x;
+    float* result   = (float*)&m;
+
+    int ii, jj, kk;
+    for(ii=0; ii<3; ++ii) /* row */
+    {
+        for(jj=0; jj<3; ++jj) /* column */
+        {
+            float sum = MTX3_INDEX(left,ii,0)*MTX3_INDEX(right,0,jj);
+            for(kk=1; kk<3; ++kk)
+            {
+                sum += (MTX3_INDEX(left,ii,kk)*MTX3_INDEX(right,kk,jj));
+            }
+            MTX3_INDEX(result,ii,jj) = sum;
+        }
+    }
+    return m;
+}
+#undef MTX3_INDEX
+INLINE float mat3_determinant(MAT3_INPUT m)
+{
+    float f0 = m.r0.x *  (m.r1.y*m.r2.z - m.r2.y*m.r1.z);
+    float f1 = m.r0.y * -(m.r1.x*m.r2.z - m.r2.x*m.r1.z);
+    float f2 = m.r0.z *  (m.r1.x*m.r2.y - m.r2.x*m.r1.y);
+
+    return f0 + f1 + f2;
 }
 
 #ifdef __cplusplus
