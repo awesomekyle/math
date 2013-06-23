@@ -60,10 +60,10 @@ struct Vec2Fixture
         float* _b = (float*)&i;
         float* end = _a +  sizeof(a)/sizeof(float) * 3;
         while(_a != end) {
-            *_b = *_a = _rand_float(-100.0f, 100.0f);
+            *_b = *_a = _rand_float(-50.0f, 50.0f);
             ++_a, ++_b;
         }
-        s = _rand_float(-100.0f, 100.0f);
+        s = _rand_float(-50.0f, 50.0f);
     }
     ~Vec2Fixture() { }
 };
@@ -195,10 +195,10 @@ struct Vec3Fixture
         float* _b = (float*)&i;
         float* end = _a +  sizeof(a)/sizeof(float) * 3;
         while(_a != end) {
-            *_b = *_a = _rand_float(-100.0f, 100.0f);
+            *_b = *_a = _rand_float(-50.0f, 50.0f);
             ++_a, ++_b;
         }
-        s = _rand_float(-100.0f, 100.0f);
+        s = _rand_float(-50.0f, 50.0f);
     }
     ~Vec3Fixture() { }
 };
@@ -341,10 +341,10 @@ struct Vec4Fixture
         float* _b = (float*)&i;
         float* end = _a +  sizeof(a)/sizeof(float) * 3;
         while(_a != end) {
-            *_b = *_a = _rand_float(-100.0f, 100.0f);
+            *_b = *_a = _rand_float(-50.0f, 50.0f);
             ++_a, ++_b;
         }
-        s = _rand_float(-100.0f, 100.0f);
+        s = _rand_float(-50.0f, 50.0f);
     }
     ~Vec4Fixture() { }
 };
@@ -477,10 +477,10 @@ struct Mat3Fixture
         float* _b = (float*)&i;
         float* end = _a + sizeof(a)/sizeof(float) * 3;
         while(_a != end) {
-            *_b = *_a = _rand_float(-100.0f, 100.0f);
+            *_b = *_a = _rand_float(-50.0f, 50.0f);
             ++_a, ++_b;
         }
-        s = _rand_float(-100.0f, 100.0f);
+        s = _rand_float(-50.0f, 50.0f);
     }
     ~Mat3Fixture() { }
 };
@@ -492,9 +492,9 @@ TEST_FIXTURE(Mat3Fixture, Mat3Identity)
 }
 TEST_FIXTURE(Mat3Fixture, Mat3Scale)
 {
-    float x = _rand_float(0.1f, 100.0f),
-          y = _rand_float(0.1f, 100.0f),
-          z = _rand_float(0.1f, 100.0f);
+    float x = _rand_float(0.1f, 50.0f),
+          y = _rand_float(0.1f, 50.0f),
+          z = _rand_float(0.1f, 50.0f);
     a = (glm::mat3)glm::scale(glm::mat4(), glm::vec3(x,y,z));
     i = mat3_scalef(x,y,z);
     CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
@@ -519,9 +519,9 @@ TEST_FIXTURE(Mat3Fixture, Mat3RotateZ)
 }
 TEST_FIXTURE(Mat3Fixture, Mat3Rotate)
 {
-    float x = _rand_float(0.1f, 100.0f),
-          y = _rand_float(0.1f, 100.0f),
-          z = _rand_float(0.1f, 100.0f);
+    float x = _rand_float(0.1f, 50.0f),
+          y = _rand_float(0.1f, 50.0f),
+          z = _rand_float(0.1f, 50.0f);
     a = (glm::mat3)glm::rotate(glm::mat4(), s, glm::vec3(x,y,z));
     i = mat3_rotation_axis(vec3_create(x,y,z), s);
     CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
@@ -534,7 +534,7 @@ TEST_FIXTURE(Mat3Fixture, Mat3Multiply)
 }
 TEST_FIXTURE(Mat3Fixture, Mat3Determinant)
 {
-    CHECK_EQUAL_FLOAT(glm::determinant(a), mat3_determinant(i));
+    CHECK_EQUAL_FLOAT_EPSILON(glm::determinant(a), mat3_determinant(i), 0.5);
 }
 
 } // anonymous namespace

@@ -130,6 +130,8 @@ void _check_not_null(const char* file, int line, const void* pointer);
 /* float */
 #define CHECK_EQUAL_FLOAT(expected, actual) \
     _check_equal_float(__FILE__, __LINE__, (double)expected, (double)actual)
+#define CHECK_EQUAL_FLOAT_EPSILON(expected, actual, epsilon) \
+    _check_equal_float_epsilon(__FILE__, __LINE__, (double)expected, (double)actual, (double)epsilon)
 #define CHECK_NOT_EQUAL_FLOAT(expected, actual) \
     _check_not_equal_float(__FILE__, __LINE__, (double)expected, (double)actual)
 #define CHECK_LESS_THAN_FLOAT(left, right) \
@@ -142,6 +144,7 @@ void _check_not_null(const char* file, int line, const void* pointer);
     _check_greater_than_equal_float(__FILE__, __LINE__, (double)left, (double)right)
 
 void _check_equal_float(const char* file, int line, double expected, double actual);
+void _check_equal_float_epsilon(const char* file, int line, double expected, double actual, double epsilon);
 void _check_not_equal_float(const char* file, int line, double expected, double actual);
 void _check_less_than_float(const char* file, int line, double left, double right);
 void _check_greater_than_float(const char* file, int line, double left, double right);

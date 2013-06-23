@@ -130,6 +130,11 @@ void _check_equal_float(const char* file, int line, double expected, double actu
     if(fabs(expected - actual) > EPSILON)
         _fail(file,line, "Expected: %f  Actual: %f", expected, actual);
 }
+void _check_equal_float_epsilon(const char* file, int line, double expected, double actual, double epsilon)
+{
+    if(fabs(expected - actual) > epsilon)
+        _fail(file,line, "Expected: %f  Actual: %f", expected, actual);
+}
 void _check_not_equal_float(const char* file, int line, double expected, double actual)
 {
     if(fabs(expected - actual) < EPSILON)
