@@ -25,6 +25,17 @@ typedef struct Mat3
 {
     Vec3 r0, r1, r2;
 } Mat3;
+typedef struct Mat4
+{
+    Vec4 r0, r1, r2, r3;
+} Mat4;
+typedef Vec4 Quaternion;
+typedef struct Transform
+{
+    Quaternion  orientation;
+    Vec3        position;
+    float       scale;
+} Transform;
 
 /**
  * Constants
@@ -43,17 +54,25 @@ extern "C" { // C linkage
     typedef const Vec3& VEC3_INPUT;
     typedef const Vec4& VEC4_INPUT;
     typedef const Mat3& MAT3_INPUT;
+    typedef const Mat4& MAT4_INPUT;
+    typedef const Quaternion& QUAT_INPUT;
+    typedef const Transform& TRANSFORM_INPUT;
     #define INLINE inline
 #else
     typedef Vec2 VEC2_INPUT;
     typedef Vec3 VEC3_INPUT;
     typedef Vec4 VEC4_INPUT;
     typedef Mat3 MAT3_INPUT;
+    typedef Mat4 MAT4_INPUT;
+    typedef Quaternion QUAT_INPUT;
+    typedef Transform TRANSFORM_INPUT;
     #define INLINE static __inline
 #endif
 
 INLINE float rad_to_deg(float r) { return kRadToDeg*r; }
 INLINE float deg_to_rad(float d) { return kDegToRad*d; }
+
+#define swapf(a, b) { float t = a; a = b; b = t; }
 
 /******************************************************************************\
  * Vec2                                                                       *
@@ -519,6 +538,17 @@ static const Mat3 mat3_identity = {
     { 0.0f, 1.0f, 0.0f },
     { 0.0f, 0.0f, 1.0f },
 };
+INLINE Mat3 mat3_create(float f00, float f01, float f02,
+                        float f10, float f11, float f12,
+                        float f20, float f21, float f22)
+{
+    Mat3 m = {
+        { f00, f01, f02 },
+        { f10, f11, f12 },
+        { f20, f21, f22 },
+    };
+    return m;
+}
 INLINE Mat3 mat3_scalef(float x, float y, float z)
 {
     Mat3 r = mat3_identity;
@@ -591,6 +621,14 @@ INLINE Mat3 mat3_rotation_axis(VEC3_INPUT axis, float rad)
 
     return m;
 }
+INLINE Mat3 mat3_mul_scalar(MAT3_INPUT m, float f)
+{
+    Mat3 result;
+    result.r0 = vec3_mul_scalar(m.r0, f);
+    result.r1 = vec3_mul_scalar(m.r1, f);
+    result.r2 = vec3_mul_scalar(m.r2, f);
+    return result;
+}
 #define MTX3_INDEX(f,r,c) ((f)[(r*3)+c])
 INLINE Mat3 mat3_multiply(MAT3_INPUT a, MAT3_INPUT b)
 {
@@ -623,6 +661,522 @@ INLINE float mat3_determinant(MAT3_INPUT m)
     float f2 = m.r0.z *  (m.r1.x*m.r2.y - m.r2.x*m.r1.y);
 
     return f0 + f1 + f2;
+}
+INLINE Mat3 mat3_transpose(MAT3_INPUT m)
+{
+    Mat3 result = m;
+    swapf(result.r0.y, result.r1.x);
+    swapf(result.r0.z, result.r2.x);
+    swapf(result.r1.z, result.r2.y);
+    return result;
+}
+INLINE Mat3 mat3_inverse(MAT3_INPUT m)
+{
+    float det = mat3_determinant(m);
+    Mat3 inv;
+
+    inv.r0.x =   (m.r1.y*m.r2.z) - (m.r1.z*m.r2.y);
+    inv.r0.y = -((m.r1.x*m.r2.z) - (m.r1.z*m.r2.x));
+    inv.r0.z =   (m.r1.x*m.r2.y) - (m.r1.y*m.r2.x);
+
+    inv.r1.x = -((m.r0.y*m.r2.z) - (m.r0.z*m.r2.y));
+    inv.r1.y =   (m.r0.x*m.r2.z) - (m.r0.z*m.r2.x);
+    inv.r1.z = -((m.r0.x*m.r2.y) - (m.r0.y*m.r2.x));
+
+    inv.r2.x =   (m.r0.y*m.r1.z) - (m.r0.z*m.r1.y);
+    inv.r2.y = -((m.r0.x*m.r1.z) - (m.r0.z*m.r1.x));
+    inv.r2.z =   (m.r0.x*m.r1.y) - (m.r0.y*m.r1.x);
+
+    inv = mat3_transpose(inv);
+    inv = mat3_mul_scalar(inv, 1.0f/det);
+
+    return inv;
+}
+INLINE Vec3 mat3_mul_vector(VEC3_INPUT v, MAT3_INPUT m)
+{
+    Vec3 res, t;
+
+    t = vec3_mul(m.r0, v);
+    res.x = vec3_hadd(t);
+
+    t = vec3_mul(m.r1, v);
+    res.y = vec3_hadd(t);
+
+    t = vec3_mul(m.r2, v);
+    res.z = vec3_hadd(t);
+
+    return res;
+}
+
+
+/******************************************************************************\
+ * Mat4                                                                       *
+\******************************************************************************/
+static const Mat4 mat4_identity = {
+    { 1.0f, 0.0f, 0.0f, 0.0f },
+    { 0.0f, 1.0f, 0.0f, 0.0f },
+    { 0.0f, 0.0f, 1.0f, 0.0f },
+    { 0.0f, 0.0f, 0.0f, 1.0f },
+};
+INLINE Mat4 mat4_scalef(float x, float y, float z)
+{
+    Mat4 r = mat4_identity;
+    r.r0.x = x;
+    r.r1.y = y;
+    r.r2.z = z;
+    return r;
+}
+INLINE Mat4 mat4_scale(VEC3_INPUT v)
+{
+    return mat4_scalef(v.x,v.y,v.z);
+}
+INLINE Mat4 mat4_translatef(float x, float y, float z)
+{
+    Mat4 r = mat4_identity;
+    r.r3.x = x;
+    r.r3.y = y;
+    r.r3.z = z;
+    return r;
+}
+INLINE Mat4 mat4_translate(VEC3_INPUT v)
+{
+    return mat4_translatef(v.x,v.y,v.z);
+}
+INLINE Mat4 mat4_rotation_x(float rad)
+{
+    float   c = cosf( rad );
+    float   s = sinf( rad );
+    Mat4    r = mat4_identity;
+    r.r1.y = c;
+    r.r1.z = s;
+    r.r2.y = -s;
+    r.r2.z = c;
+    return r;
+}
+INLINE Mat4 mat4_rotation_y(float rad)
+{
+    float   c = cosf( rad );
+    float   s = sinf( rad );
+    Mat4    r = mat4_identity;
+    r.r0.x = c;
+    r.r0.z = -s;
+    r.r2.x = s;
+    r.r2.z = c;
+    return r;
+}
+INLINE Mat4 mat4_rotation_z(float rad)
+{
+    float   c = cosf( rad );
+    float   s = sinf( rad );
+    Mat4    r = mat4_identity;
+    r.r0.x = c;
+    r.r0.y = s;
+    r.r1.x = -s;
+    r.r1.y = c;
+    return r;
+}
+INLINE Mat4 mat4_rotation_axis(VEC3_INPUT axis, float rad)
+{
+    Vec3 normAxis = vec3_normalize(axis);
+    float c = cosf(rad);
+    float s = sinf(rad);
+    float t = 1 - c;
+
+    float x = normAxis.x;
+    float y = normAxis.y;
+    float z = normAxis.z;
+
+    Mat4 m = mat4_identity;
+
+    m.r0.x = (t * x * x) + c;
+    m.r0.y = (t * x * y) + s * z;
+    m.r0.z = (t * x * z) - s * y;
+
+    m.r1.x = (t * x * y) - (s * z);
+    m.r1.y = (t * y * y) + c;
+    m.r1.z = (t * y * z) + (s * x);
+
+    m.r2.x = (t * x * z) + (s * y);
+    m.r2.y = (t * y * z) - (s * x);
+    m.r2.z = (t * z * z) + c;
+
+    return m;
+}
+INLINE Mat4 mat4_mul_scalar(MAT4_INPUT m, float f)
+{
+    Mat4 result;
+    result.r0 = vec4_mul_scalar(m.r0, f);
+    result.r1 = vec4_mul_scalar(m.r1, f);
+    result.r2 = vec4_mul_scalar(m.r2, f);
+    result.r3 = vec4_mul_scalar(m.r3, f);
+    return result;
+}
+#define MTX4_INDEX(f,r,c) ((f)[(r*4)+c])
+INLINE Mat4 mat4_multiply(MAT4_INPUT a, MAT4_INPUT b)
+{
+    Mat4 m = mat4_identity;
+
+    const float* left     = &a.r0.x;
+    const float* right    = &b.r0.x;
+    float* result   = (float*)&m;
+
+    int ii, jj, kk;
+    for(ii=0; ii<4; ++ii) /* row */
+    {
+        for(jj=0; jj<4; ++jj) /* column */
+        {
+            float sum = MTX4_INDEX(left,ii,0)*MTX4_INDEX(right,0,jj);
+            for(kk=1; kk<4; ++kk)
+            {
+                sum += (MTX4_INDEX(left,ii,kk)*MTX4_INDEX(right,kk,jj));
+            }
+            MTX4_INDEX(result,ii,jj) = sum;
+        }
+    }
+    return m;
+}
+#undef MTX4_INDEX
+INLINE float mat4_determinant(MAT4_INPUT m)
+{
+    float det = 0.0f;
+
+    Mat3 a = {  { m.r1.y,m.r1.z,m.r1.w },
+                { m.r2.y,m.r2.z,m.r2.w },
+                { m.r3.y,m.r3.z,m.r3.w } };
+
+    Mat3 b = {  { m.r1.x,m.r1.z,m.r1.w},
+                { m.r2.x,m.r2.z,m.r2.w},
+                { m.r3.x,m.r3.z,m.r3.w} };
+
+    Mat3 c = {  { m.r1.x,m.r1.y,m.r1.w},
+                { m.r2.x,m.r2.y,m.r2.w},
+                { m.r3.x,m.r3.y,m.r3.w} };
+
+    Mat3 d = {  { m.r1.x,m.r1.y,m.r1.z},
+                { m.r2.x,m.r2.y,m.r2.z},
+                { m.r3.x,m.r3.y,m.r3.z} };
+
+
+    det += m.r0.x * mat3_determinant(a);
+
+    det -= m.r0.y * mat3_determinant(b);
+
+    det += m.r0.z * mat3_determinant(c);
+
+    det -= m.r0.w * mat3_determinant(d);
+
+    return det;
+}
+INLINE Mat4 mat4_transpose(MAT4_INPUT m)
+{
+    Mat4 result = m;
+    swapf(result.r0.y, result.r1.x);
+    swapf(result.r0.z, result.r2.x);
+    swapf(result.r0.w, result.r3.x);
+    swapf(result.r1.z, result.r2.y);
+    swapf(result.r1.w, result.r3.y);
+    swapf(result.r2.w, result.r3.z);
+    return result;
+}
+INLINE Mat4 mat4_inverse(MAT4_INPUT mat)
+{
+    Mat4 ret;
+    float recip;
+
+    /* temp matrices */
+
+    /* row 1 */
+    Mat3 a = mat3_create(mat.r1.y,mat.r1.z,mat.r1.w,
+        mat.r2.y,mat.r2.z,mat.r2.w,
+        mat.r3.y,mat.r3.z,mat.r3.w );
+
+    Mat3 b = mat3_create(mat.r1.x,mat.r1.z,mat.r1.w,
+        mat.r2.x,mat.r2.z,mat.r2.w,
+        mat.r3.x,mat.r3.z,mat.r3.w );
+
+    Mat3 c = mat3_create(mat.r1.x,mat.r1.y,mat.r1.w,
+        mat.r2.x,mat.r2.y,mat.r2.w,
+        mat.r3.x,mat.r3.y,mat.r3.w );
+
+    Mat3 d = mat3_create(mat.r1.x,mat.r1.y,mat.r1.z,
+        mat.r2.x,mat.r2.y,mat.r2.z,
+        mat.r3.x,mat.r3.y,mat.r3.z );
+
+    /* row 2 */
+    Mat3 e = mat3_create(mat.r0.y,mat.r0.z,mat.r0.w,
+        mat.r2.y,mat.r2.z,mat.r2.w,
+        mat.r3.y,mat.r3.z,mat.r3.w );
+
+    Mat3 f = mat3_create(mat.r0.x,mat.r0.z,mat.r0.w,
+        mat.r2.x,mat.r2.z,mat.r2.w,
+        mat.r3.x,mat.r3.z,mat.r3.w );
+
+    Mat3 g = mat3_create(mat.r0.x,mat.r0.y,mat.r0.w,
+        mat.r2.x,mat.r2.y,mat.r2.w,
+        mat.r3.x,mat.r3.y,mat.r3.w );
+
+    Mat3 h = mat3_create(mat.r0.x,mat.r0.y,mat.r0.z,
+        mat.r2.x,mat.r2.y,mat.r2.z,
+        mat.r3.x,mat.r3.y,mat.r3.z );
+
+
+    /* row 3 */
+    Mat3 i = mat3_create(mat.r0.y,mat.r0.z,mat.r0.w,
+        mat.r1.y,mat.r1.z,mat.r1.w,
+        mat.r3.y,mat.r3.z,mat.r3.w );
+
+    Mat3 j = mat3_create(mat.r0.x,mat.r0.z,mat.r0.w,
+        mat.r1.x,mat.r1.z,mat.r1.w,
+        mat.r3.x,mat.r3.z,mat.r3.w );
+
+    Mat3 k = mat3_create(mat.r0.x,mat.r0.y,mat.r0.w,
+        mat.r1.x,mat.r1.y,mat.r1.w,
+        mat.r3.x,mat.r3.y,mat.r3.w );
+
+    Mat3 l = mat3_create(mat.r0.x,mat.r0.y,mat.r0.z,
+        mat.r1.x,mat.r1.y,mat.r1.z,
+        mat.r3.x,mat.r3.y,mat.r3.z );
+
+
+    /* row 4 */
+    Mat3 m = mat3_create(mat.r0.y, mat.r0.z, mat.r0.w,
+        mat.r1.y, mat.r1.z, mat.r1.w,
+        mat.r2.y, mat.r2.z, mat.r2.w );
+
+    Mat3 n = mat3_create(mat.r0.x, mat.r0.z, mat.r0.w,
+        mat.r1.x, mat.r1.z, mat.r1.w,
+        mat.r2.x, mat.r2.z, mat.r2.w );
+
+    Mat3 o = mat3_create(mat.r0.x,mat.r0.y,mat.r0.w,
+        mat.r1.x,mat.r1.y,mat.r1.w,
+        mat.r2.x,mat.r2.y,mat.r2.w );
+
+    Mat3 p = mat3_create(mat.r0.x,mat.r0.y,mat.r0.z,
+        mat.r1.x,mat.r1.y,mat.r1.z,
+        mat.r2.x,mat.r2.y,mat.r2.z );
+
+    /* row 1 */
+    ret.r0.x = mat3_determinant(a);
+
+    ret.r0.y = -mat3_determinant(b);
+
+    ret.r0.z = mat3_determinant(c);
+
+    ret.r0.w = -mat3_determinant(d);
+
+    /* row 2 */
+    ret.r1.x = -mat3_determinant(e);
+
+    ret.r1.y = mat3_determinant(f);
+
+    ret.r1.z = -mat3_determinant(g);
+
+    ret.r1.w = mat3_determinant(h);
+
+    /* row 3 */
+    ret.r2.x = mat3_determinant(i);
+
+    ret.r2.y = -mat3_determinant(j);
+
+    ret.r2.z = mat3_determinant(k);
+
+    ret.r2.w = -mat3_determinant(l);
+
+    /* row 4 */
+    ret.r3.x = -mat3_determinant(m);
+
+    ret.r3.y = mat3_determinant(n);
+
+    ret.r3.z = -mat3_determinant(o);
+
+    ret.r3.w = mat3_determinant(p);
+
+    ret = mat4_transpose(ret);
+    recip = 1.0f/mat4_determinant(mat);
+    ret = mat4_mul_scalar(ret, recip);
+    return ret;
+}
+INLINE Vec4 mat4_mul_vector(VEC4_INPUT v, MAT4_INPUT m)
+{
+    Vec4 res, t;
+
+    t = vec4_mul(m.r0, v);
+    res.x = vec4_hadd(t);
+
+    t = vec4_mul(m.r1, v);
+    res.y = vec4_hadd(t);
+
+    t = vec4_mul(m.r2, v);
+    res.z = vec4_hadd(t);
+
+    t = vec4_mul(m.r3, v);
+    res.w = vec4_hadd(t);
+
+    return res;
+}
+INLINE Mat4 mat4_ortho_off_center(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+{
+    Mat4 m = mat4_identity;
+
+    float diff = farPlane-nearPlane;
+
+    m.r0.x = 2.0f/(right-left);
+    m.r1.y = 2.0f/(top-bottom);
+    m.r2.z = 1.0f/diff;
+    m.r3.x = -((left+right)/(right-left));
+    m.r3.y = -((top+bottom)/(top-bottom));
+    m.r3.z = -nearPlane/diff;
+
+    return m;
+}
+INLINE Mat4 mat4_ortho(float width, float height, float nearPlane, float farPlane)
+{
+    float halfWidth = width/2.0f;
+    float halfHeight = height/2.0f;
+
+    return mat4_ortho_off_center(-halfWidth, halfWidth, -halfHeight, halfHeight, nearPlane, farPlane);
+}
+INLINE Mat4 mat4_perspective(float width, float height, float nearPlane, float farPlane)
+{
+    Mat4 m = mat4_identity;
+
+    m.r0.x = 2*nearPlane/width;
+    m.r1.y = 2*nearPlane/height;
+    m.r2.z = farPlane/(farPlane-nearPlane);
+    m.r2.w = 1;
+    m.r3.z = nearPlane*farPlane/(nearPlane-farPlane);
+    m.r3.w = 0;
+    return m;
+}
+
+
+
+/******************************************************************************\
+ * Quaternion                                                                  *
+\******************************************************************************/
+static const Quaternion quat_identity = {0.0f,0.0f,0.0f,1.0f};
+
+INLINE Quaternion quat_from_axis_angle(Vec3 axis, float rad)
+{
+    Quaternion q;
+    Vec3 norm = vec3_normalize(axis);
+    float   a = rad*0.5f;
+    float   s = sinf(a);
+    q.x = norm.x*s;
+    q.y = norm.y*s;
+    q.z = norm.z*s;
+    q.w = cosf(a);
+
+    return q;
+}
+INLINE Quaternion quat_from_axis_anglef(float x, float y, float z, float rad)
+{
+    return quat_from_axis_angle(vec3_create(x,y,z),rad);
+}
+INLINE Quaternion quat_normalize(QUAT_INPUT q)
+{
+    return vec4_normalize(q);
+}
+INLINE Mat3 quat_to_mat3(QUAT_INPUT q)
+{
+    Quaternion norm = quat_normalize(q);
+    float xx = norm.x * norm.x;
+    float yy = norm.y * norm.y;
+    float zz = norm.z * norm.z;
+
+    float xy = norm.x * norm.y;
+    float zw = norm.z * norm.w;
+    float xz = norm.x * norm.z;
+    float yw = norm.y * norm.w;
+    float yz = norm.y * norm.z;
+    float xw = norm.x * norm.w;
+
+    Mat3 ret = mat3_create(1 - 2*(yy+zz),     2*(xy+zw),     2*(xz-yw),
+                               2*(xy-zw), 1 - 2*(xx+zz),     2*(yz+xw),
+                               2*(xz+yw),     2*(yz-xw), 1 - 2*(xx+yy));
+    return ret;
+}
+INLINE Quaternion quat_conjugate(QUAT_INPUT q)
+{
+    Quaternion ret = {
+        -q.x,
+        -q.y,
+        -q.z,
+         q.w
+    };
+    return ret;
+}
+INLINE Quaternion quat_inverse(QUAT_INPUT q)
+{
+    Quaternion norm = quat_normalize(q); /* Only normalized supported now */
+    return quat_conjugate(norm);
+}
+INLINE Quaternion quat_multiply(QUAT_INPUT l, QUAT_INPUT r)
+{
+    Quaternion q = {r.w*l.x + r.x*l.w + r.y*l.z - r.z*l.y,
+                    r.w*l.y + r.y*l.w + r.z*l.x - r.x*l.z,
+                    r.w*l.z + r.z*l.w + r.x*l.y - r.y*l.x,
+                    r.w*l.w - r.x*l.x - r.y*l.y - r.z*l.z };
+    return q;
+}
+INLINE Quaternion quat_from_euler(float pitch, float yaw, float roll)
+{
+    float x = pitch/2;
+    float y = yaw/2;
+    float z = roll/2;
+
+    float cx = cosf(x);
+    float cy = cosf(y);
+    float cz = cosf(z);
+    float sx = sinf(x);
+    float sy = sinf(y);
+    float sz = sinf(z);
+
+    Quaternion q =
+    {
+        (sx*cy*cz) - (cx*sy*sz),
+        (cx*sy*cz) + (sx*cy*sz),
+        (cx*cy*sz) - (sx*sy*cz),
+        (cx*cy*cz) + (sx*sy*sz),
+    };
+    q = quat_normalize(q);
+
+    return q;
+}
+
+
+/******************************************************************************\
+ * Transform                                                                   *
+\******************************************************************************/
+static const Transform transform_zero = {
+    {0,0,0,1},
+    {0,0,0},
+    1.0f
+};
+
+INLINE Mat4 TransformGetMatrix(TRANSFORM_INPUT t)
+{
+    Quaternion q = t.orientation;
+    float xx = q.x * q.x;
+    float yy = q.y * q.y;
+    float zz = q.z * q.z;
+
+    float xy = q.x * q.y;
+    float zw = q.z * q.w;
+    float xz = q.x * q.z;
+    float yw = q.y * q.w;
+    float yz = q.y * q.z;
+    float xw = q.x * q.w;
+
+    float s = t.scale;
+
+    Mat4 ret = {
+        { (1 - 2*(yy+zz))*s, (    2*(xy+zw))*s, (    2*(xz-yw))*s, 0.0f },
+        { (    2*(xy-zw))*s, (1 - 2*(xx+zz))*s, (    2*(yz+xw))*s, 0.0f },
+        { (    2*(xz+yw))*s, (    2*(yz-xw))*s, (1 - 2*(xx+yy))*s, 0.0f },
+        {     t.position.x,     t.position.y,     t.position.z, 1.0f },
+    };
+    return ret;
 }
 
 #ifdef __cplusplus

@@ -29,6 +29,11 @@
         CHECK_EQUAL_FLOAT((expected)[ii], (actual)[ii]);    \
     }
 
+#define CHECK_EQUAL_MAT4(expected, actual)  \
+    for(int ii=0;ii<16;++ii) {                   \
+        CHECK_EQUAL_FLOAT((expected)[ii], (actual)[ii]);    \
+    }
+
 namespace
 {
 
@@ -535,6 +540,218 @@ TEST_FIXTURE(Mat3Fixture, Mat3Multiply)
 TEST_FIXTURE(Mat3Fixture, Mat3Determinant)
 {
     CHECK_EQUAL_FLOAT_EPSILON(glm::determinant(a), mat3_determinant(i), 0.5);
+}
+TEST_FIXTURE(Mat3Fixture, Mat3Transpose)
+{
+    a = glm::transpose(a);
+    i = mat3_transpose(i);
+    CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat3Fixture, Mat3Inverse)
+{
+    a = glm::inverse(a);
+    i = mat3_inverse(i);
+    CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat3Fixture, Mat3MultiplyScalar)
+{
+    a = a * s;
+    i = mat3_mul_scalar(i, s);
+    CHECK_EQUAL_MAT3((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat3Fixture, Mat3MultiplyVector)
+{
+    float x = _rand_float(-50.0f, 50.0f),
+          y = _rand_float(-50.0f, 50.0f),
+          z = _rand_float(-50.0f, 50.0f);
+    glm::vec3 u(x,y,z);
+    Vec3 v = vec3_create(x,y,z);
+
+    a = glm::transpose(a);
+    u = a * u;
+    v = mat3_mul_vector(v, i);
+    CHECK_EQUAL_VEC3((float*)&u, (float*)&v);
+}
+
+/******************************************************************************\
+ * Mat4                                                                       *
+\******************************************************************************/
+struct Mat4Fixture
+{
+    glm::mat4   a,b,c;
+    Mat4        i,j,k;
+    float       s;
+
+    Mat4Fixture()
+    {
+        float* _a = (float*)&a;
+        float* _b = (float*)&i;
+        float* end = _a + sizeof(a)/sizeof(float) * 3;
+        while(_a != end) {
+            *_b = *_a = _rand_float(-50.0f, 50.0f);
+            ++_a, ++_b;
+        }
+        s = _rand_float(-50.0f, 50.0f);
+    }
+    ~Mat4Fixture() { }
+};
+TEST_FIXTURE(Mat4Fixture, Mat4Identity)
+{
+    a = glm::mat4();
+    i = mat4_identity;
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4Scale)
+{
+    float x = _rand_float(0.1f, 50.0f),
+          y = _rand_float(0.1f, 50.0f),
+          z = _rand_float(0.1f, 50.0f);
+    a = (glm::mat4)glm::scale(glm::mat4(), glm::vec3(x,y,z));
+    i = mat4_scalef(x,y,z);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4Translate)
+{
+    float x = _rand_float(-50.0f, 50.0f),
+          y = _rand_float(-50.0f, 50.0f),
+          z = _rand_float(-50.0f, 50.0f);
+    a = (glm::mat4)glm::translate(glm::mat4(), glm::vec3(x,y,z));
+    i = mat4_translatef(x,y,z);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4RotateX)
+{
+    a = (glm::mat4)glm::rotate(glm::mat4(), s, glm::vec3(1,0,0));
+    i = mat4_rotation_x(s);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4RotateY)
+{
+    a = (glm::mat4)glm::rotate(glm::mat4(), s, glm::vec3(0,1,0));
+    i = mat4_rotation_y(s);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4RotateZ)
+{
+    a = (glm::mat4)glm::rotate(glm::mat4(), s, glm::vec3(0,0,1));
+    i = mat4_rotation_z(s);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4Rotate)
+{
+    float x = _rand_float(0.1f, 50.0f),
+          y = _rand_float(0.1f, 50.0f),
+          z = _rand_float(0.1f, 50.0f);
+    a = (glm::mat4)glm::rotate(glm::mat4(), s, glm::vec3(x,y,z));
+    i = mat4_rotation_axis(vec3_create(x,y,z), s);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4Multiply)
+{
+    a = c*b; // NOTE: These are reversed because the library is column major, not row
+    i = mat4_multiply(j,k);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4Determinant)
+{
+    CHECK_EQUAL_FLOAT_EPSILON(glm::determinant(a), mat4_determinant(i), 0.5);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4Transpose)
+{
+    a = glm::transpose(a);
+    i = mat4_transpose(i);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4Inverse)
+{
+    a = glm::inverse(a);
+    i = mat4_inverse(i);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4MultiplyScalar)
+{
+    a = a * s;
+    i = mat4_mul_scalar(i, s);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4MultiplyVector)
+{
+    float x = _rand_float(-50.0f, 50.0f),
+          y = _rand_float(-50.0f, 50.0f),
+          z = _rand_float(-50.0f, 50.0f),
+          w = _rand_float(-50.0f, 50.0f);
+    glm::vec4 u(x,y,z,w);
+    Vec4 v = vec4_create(x,y,z,w);
+
+    a = glm::transpose(a);
+    u = a * u;
+    v = mat4_mul_vector(v, i);
+    CHECK_EQUAL_VEC4((float*)&u, (float*)&v);
+}
+
+
+/******************************************************************************\
+ * Quaternion                                                                  *
+\******************************************************************************/
+struct QuaternionFixture
+{
+    glm::quat   a,b,c;
+    Quaternion  i,j,k;
+    float       s;
+
+    QuaternionFixture()
+    {
+        float* _a = (float*)&a;
+        float* _b = (float*)&i;
+        float* end = _a +  sizeof(a)/sizeof(float) * 3;
+        while(_a != end) {
+            *_b = *_a = _rand_float(-50.0f, 50.0f);
+            ++_a, ++_b;
+        }
+        s = _rand_float(-50.0f, 50.0f);
+    }
+    ~QuaternionFixture() { }
+};
+TEST_FIXTURE(QuaternionFixture, Create)
+{
+    float x = _rand_float(0.1f, 50.0f),
+          y = _rand_float(0.1f, 50.0f),
+          z = _rand_float(0.1f, 50.0f);
+    a = glm::angleAxis(s,glm::normalize(glm::vec3(x,y,z)));
+    i = quat_from_axis_anglef(x,y,z,s);
+    CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(QuaternionFixture, Normalize)
+{
+    a = glm::normalize(a);
+    i = quat_normalize(i);
+    CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(QuaternionFixture, ConvertToMatrix)
+{
+    a = glm::normalize(a);
+    glm::mat3 x = glm::mat3_cast(a);
+    Mat3 y = quat_to_mat3(i);
+    CHECK_EQUAL_MAT3((float*)&x, (float*)&y);
+}
+TEST_FIXTURE(QuaternionFixture, Conjugate)
+{
+    a = glm::conjugate(a);
+    i = quat_conjugate(i);
+    CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(QuaternionFixture, Inverse)
+{
+    a = glm::normalize(a);
+    a = glm::inverse(a);
+    i = quat_inverse(i);
+    CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(QuaternionFixture, Multiply)
+{
+    a = c * b;
+    i = quat_multiply(j, k);
+    CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
 }
 
 } // anonymous namespace
