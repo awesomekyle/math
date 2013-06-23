@@ -21,7 +21,7 @@ C_STD	= -std=c89
 CXX_STD	= -std=c++98
 WARNINGS	+=	 -Wall -Wextra -pedantic -Wpointer-arith \
 				 -Wwrite-strings  -Wredundant-decls -Winline -Wno-long-long \
-				 -Wconversion -Werror
+				 -Wconversion -Werror -Wuninitialized 
 CPPFLAGS += -MMD -MP $(DEFINES) $(INCLUDES) $(WARNINGS) -g
 CFLAGS += $(CPPFLAGS) -Wmissing-declarations -Wstrict-prototypes -Wnested-externs -Wmissing-prototypes $(C_STD)
 CXXFLAGS += $(CPPFLAGS) $(CXX_STD)
