@@ -9,9 +9,8 @@
 #ifdef _MSC_VER
     #pragma warning(push)
     #pragma warning(disable:4204) /* Nonstandard extension: non-constant aggregate initializer */
-#endif
 
-#if __STDC_VERSION__ < 199901L
+    /* MSVC doens't define fminf and fmaxf */
     static float fminf(float a, float b) { return (a < b ? a : b); }
     static float fmaxf(float a, float b) { return (a > b ? a : b); }
 #endif
