@@ -705,6 +705,30 @@ TEST_FIXTURE(Mat4Fixture, Mat4MultiplyVector)
     CHECK_EQUAL_VEC4((float*)&u, (float*)&v);
 }
 
+TEST_FIXTURE(Mat4Fixture, Mat4Perspective)
+{
+    a = XMMatrixPerspectiveLH(1280, 720, 1.0f, 1000.0f);
+    i = mat4_perspective(1280, 720, 1.0f, 1000.0f);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4PerspectiveFov)
+{
+    a = XMMatrixPerspectiveFovLH(1/3.0f, 1280.0f/720, 1.0f, 1000.0f);
+    i = mat4_perspective_fov(1/3.0f, 1280.0f/720, 1.0f, 1000.0f);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4Ortho)
+{
+    a = XMMatrixOrthographicLH(1280, 720, 1.0f, 1000.0f);
+    i = mat4_ortho(1280, 720, 1.0f, 1000.0f);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
+TEST_FIXTURE(Mat4Fixture, Mat4OrthoOffCenter)
+{
+    a = XMMatrixOrthographicOffCenterLH(-500, 500, -500, 500, -1.0f, 1.0f);
+    i = mat4_ortho_off_center(-500, 500, -500, 500, -1.0f, 1.0f);
+    CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
+}
 
 /******************************************************************************\
  * Quaternion                                                                  *

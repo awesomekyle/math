@@ -1057,6 +1057,20 @@ INLINE Mat4 mat4_perspective(float width, float height, float nearPlane, float f
     m.r3.w = 0;
     return m;
 }
+INLINE Mat4 mat4_perspective_fov(float fov, float aspect, float nearPlane, float farPlane)
+{
+    Mat4 m = mat4_identity;
+    float y = 1.0f/tanf(fov/2);
+    float x = y/aspect;
+
+    m.r0.x = x;
+    m.r1.y = y;
+    m.r2.z = farPlane/(farPlane-nearPlane);
+    m.r2.w = 1;
+    m.r3.z = -nearPlane*farPlane/(farPlane-nearPlane);
+    m.r3.w = 0;
+    return m;
+}
 
 
 
