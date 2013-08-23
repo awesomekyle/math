@@ -9,6 +9,9 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+#ifdef _MSC_VER
+    #pragma warning(disable:4127) /* Conditional expression is constant */
+#endif
 typedef void (test_func_t)(void);
 
 /** @brief Test creation macros

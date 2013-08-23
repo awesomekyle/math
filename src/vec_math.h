@@ -6,6 +6,16 @@
 #define __vec_math_h__
 #include <math.h>
 
+#ifdef _MSC_VER
+    #pragma warning(push)
+    #pragma warning(disable:4204) /* Nonstandard extension: non-constant aggregate initializer */
+#endif
+
+#if __STDC_VERSION__ < 199901L
+    static float fminf(float a, float b) { return (a < b ? a : b); }
+    static float fmaxf(float a, float b) { return (a > b ? a : b); }
+#endif
+
 /**
  * Types
  */
@@ -1154,7 +1164,7 @@ static const Transform transform_zero = {
     1.0f
 };
 
-INLINE Mat4 TransformGetMatrix(TRANSFORM_INPUT t)
+INLINE Mat4 transform_get_matrix(TRANSFORM_INPUT t)
 {
     Quaternion q = t.orientation;
     float xx = q.x * q.x;
@@ -1181,6 +1191,11 @@ INLINE Mat4 TransformGetMatrix(TRANSFORM_INPUT t)
 
 #ifdef __cplusplus
 } // extern "C" {
+#endif
+
+
+#ifdef _MSC_VER
+    #pragma warning(pop)
 #endif
 
 #endif /* include guard */
