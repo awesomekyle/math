@@ -1045,6 +1045,8 @@ INLINE Mat4 mat4_ortho(float width, float height, float nearPlane, float farPlan
 
     return mat4_ortho_off_center(-halfWidth, halfWidth, -halfHeight, halfHeight, nearPlane, farPlane);
 }
+/** LH perspective
+ */
 INLINE Mat4 mat4_perspective(float width, float height, float nearPlane, float farPlane)
 {
     Mat4 m = mat4_identity;
@@ -1057,6 +1059,8 @@ INLINE Mat4 mat4_perspective(float width, float height, float nearPlane, float f
     m.r3.w = 0;
     return m;
 }
+/** LH perspective
+ */
 INLINE Mat4 mat4_perspective_fov(float fov, float aspect, float nearPlane, float farPlane)
 {
     Mat4 m = mat4_identity;
@@ -1167,6 +1171,37 @@ INLINE Quaternion quat_from_euler(float pitch, float yaw, float roll)
     return q;
 }
 
+INLINE Vec3 quat_get_x_axis(QUAT_INPUT q)
+{
+    Vec3 ret = {
+        1-2*(q.y*q.y+q.z*q.z),
+        2*(q.x*q.y+q.w*q.z),
+        2*(q.x*q.z-q.y*q.w)
+    };
+    ret = vec3_normalize(ret);
+    return ret;
+}
+INLINE Vec3 quat_get_y_axis(QUAT_INPUT q)
+{
+    Vec3 ret = {
+        2*(q.x*q.y-q.z*q.w),
+        1-2*(q.x*q.x+q.z*q.z),
+        2*(q.y*q.z+q.x*q.w)
+    };
+    ret = vec3_normalize(ret);
+    return ret;
+}
+INLINE Vec3 quat_get_z_axis(QUAT_INPUT q)
+{
+    Vec3 ret = {
+        2*(q.x*q.z+q.y*q.w),
+        2*(q.y*q.z-q.x*q.w),
+        1-2*(q.x*q.x+q.y*q.y)
+    };
+    ret = vec3_normalize(ret);
+    return ret;
+}
+
 
 /******************************************************************************\
  * Transform                                                                   *
@@ -1174,7 +1209,7 @@ INLINE Quaternion quat_from_euler(float pitch, float yaw, float roll)
 static const Transform transform_zero = {
     {0,0,0,1},
     {0,0,0},
-    1.0f
+    1
 };
 
 INLINE Mat4 transform_get_matrix(TRANSFORM_INPUT t)
