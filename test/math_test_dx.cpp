@@ -820,8 +820,8 @@ TEST(TransformToMatrix)
           rz = _rand_float(-50.0f, 50.0f);
     float r = _rand_float(-50.0f, 50.0f);
 
-    XMMATRIX a = XMMatrixAffineTransformation(XMVectorSet(s,s,s,0), 
-                                              XMVectorZero(), 
+    XMMATRIX a = XMMatrixAffineTransformation(XMVectorSet(s,s,s,0),
+                                              XMVectorZero(),
                                               XMQuaternionRotationAxis(XMVectorSet(rx,ry,rz,0), r),
                                               XMVectorSet(x,y,z,0));
 

@@ -489,6 +489,12 @@ struct Mat3Fixture
     }
     ~Mat3Fixture() { }
 };
+TEST_FIXTURE (Mat3Fixture, Mat4FromMat3)
+{
+    glm::mat4 x = glm::mat4(a);
+    Mat4 y = mat4_from_mat3(i);
+    CHECK_EQUAL_MAT4((float*)&x, (float*)&y);
+}
 TEST_FIXTURE(Mat3Fixture, Mat3Identity)
 {
     a = glm::mat3();
@@ -595,6 +601,12 @@ struct Mat4Fixture
     }
     ~Mat4Fixture() { }
 };
+TEST_FIXTURE (Mat4Fixture, Mat3FromMat4)
+{
+    glm::mat3 x = glm::mat3(a);
+    Mat3 y = mat3_from_mat4(i);
+    CHECK_EQUAL_MAT3((float*)&x, (float*)&y);
+}
 TEST_FIXTURE(Mat4Fixture, Mat4Identity)
 {
     a = glm::mat4();

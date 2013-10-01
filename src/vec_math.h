@@ -547,6 +547,16 @@ static const Mat3 mat3_identity = {
     { 0.0f, 1.0f, 0.0f },
     { 0.0f, 0.0f, 1.0f },
 };
+INLINE Mat4 mat4_from_mat3(MAT3_INPUT m)
+{
+    Mat4 r = {
+        { m.r0.x, m.r0.y, m.r0.z, 0.0f },
+        { m.r1.x, m.r1.y, m.r1.z, 0.0f },
+        { m.r2.x, m.r2.y, m.r2.z, 0.0f },
+        {   0.0f,   0.0f,   0.0f, 1.0f },
+    };
+    return r;
+}
 INLINE Mat3 mat3_create(float f00, float f01, float f02,
                         float f10, float f11, float f12,
                         float f20, float f21, float f22)
@@ -727,6 +737,15 @@ static const Mat4 mat4_identity = {
     { 0.0f, 0.0f, 1.0f, 0.0f },
     { 0.0f, 0.0f, 0.0f, 1.0f },
 };
+INLINE Mat3 mat3_from_mat4(MAT4_INPUT m)
+{
+    Mat3 r = {
+        { m.r0.x, m.r0.y, m.r0.z },
+        { m.r1.x, m.r1.y, m.r1.z },
+        { m.r2.x, m.r2.y, m.r2.z },
+    };
+    return r;
+}
 INLINE Mat4 mat4_scalef(float x, float y, float z)
 {
     Mat4 r = mat4_identity;
