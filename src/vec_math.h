@@ -1044,18 +1044,19 @@ INLINE Mat4 mat4_inverse(MAT4_INPUT mat)
 }
 INLINE Vec4 mat4_mul_vector(VEC4_INPUT v, MAT4_INPUT m)
 {
+    Mat4 transpose = mat4_transpose(m);
     Vec4 res, t;
 
-    t = vec4_mul(m.r0, v);
+    t = vec4_mul(transpose.r0, v);
     res.x = vec4_hadd(t);
 
-    t = vec4_mul(m.r1, v);
+    t = vec4_mul(transpose.r1, v);
     res.y = vec4_hadd(t);
 
-    t = vec4_mul(m.r2, v);
+    t = vec4_mul(transpose.r2, v);
     res.z = vec4_hadd(t);
 
-    t = vec4_mul(m.r3, v);
+    t = vec4_mul(transpose.r3, v);
     res.w = vec4_hadd(t);
 
     return res;

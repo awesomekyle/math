@@ -706,7 +706,6 @@ TEST_FIXTURE(Mat4Fixture, Mat4MultiplyVector)
     glm::vec4 u(x,y,z,w);
     Vec4 v = vec4_create(x,y,z,w);
 
-    a = glm::transpose(a);
     u = a * u;
     v = mat4_mul_vector(v, i);
     CHECK_EQUAL_VEC4((float*)&u, (float*)&v);
