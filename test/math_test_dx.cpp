@@ -761,7 +761,7 @@ TEST_FIXTURE(QuaternionFixture, CreateAxisAngle)
     i = quat_from_axis_anglef(x,y,z,s);
     CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
 }
-TEST_FIXTURE(QuaternionFixture, CreateEuler)
+IGNORE_TEST_FIXTURE(QuaternionFixture, CreateEuler)
 {
     float x = _rand_float(-50.0f, 50.0f),
           y = _rand_float(-50.0f, 50.0f),
@@ -769,7 +769,7 @@ TEST_FIXTURE(QuaternionFixture, CreateEuler)
     a = XMQuaternionRotationRollPitchYaw(x,y,z);
     a = XMQuaternionNormalize(a);
     i = quat_from_euler(x,y,z);
-    //CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
+    CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
     // TODO: Change the order in `quat_from_euler`
 }
 TEST_FIXTURE(QuaternionFixture, Normalize)
