@@ -589,7 +589,6 @@ TEST_FIXTURE(Mat3Fixture, Mat3MultiplyVector)
     XMVECTOR u = XMVectorSet(x,y,z,0);
     Vec3 v = vec3_create(x,y,z);
 
-    a = XMMatrixTranspose(a);
     u = XMVector3Transform(u, a);
     v = mat3_mul_vector(v, i);
     CHECK_EQUAL_VEC3((float*)&u, (float*)&v);
@@ -699,7 +698,6 @@ TEST_FIXTURE(Mat4Fixture, Mat4MultiplyVector)
     XMVECTOR u = XMVectorSet(x,y,z,w);
     Vec4 v = vec4_create(x,y,z,w);
 
-    a = XMMatrixTranspose(a);
     u = XMVector4Transform(u, a);
     v = mat4_mul_vector(v, i);
     CHECK_EQUAL_VEC4((float*)&u, (float*)&v);
