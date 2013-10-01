@@ -221,6 +221,14 @@ INLINE Vec2 vec2_negate(VEC2_INPUT v)
  * Vec3                                                                       *
 \******************************************************************************/
 static const Vec3 vec3_zero = {0.0f,0.0f,0.0f};
+INLINE Vec3 vec3_from_vec4(VEC4_INPUT v)
+{
+    Vec3 r;
+    r.x = v.x;
+    r.y = v.y;
+    r.z = v.z;
+    return r;
+}
 INLINE Vec3 vec3_create(float x, float y, float z)
 {
     Vec3 r;
@@ -382,6 +390,15 @@ INLINE Vec3 vec3_cross(VEC3_INPUT a, VEC3_INPUT b)
  * Vec4                                                                       *
 \******************************************************************************/
 static const Vec4 vec4_zero = {0.0f,0.0f,0.0f,0.0f};
+INLINE Vec4 vec4_from_vec3(VEC3_INPUT v, float w)
+{
+    Vec4 r;
+    r.x = v.x;
+    r.y = v.y;
+    r.z = v.z;
+    r.w = w;
+    return r;
+}
 INLINE Vec4 vec4_create(float x, float y, float z, float w)
 {
     Vec4 r;
