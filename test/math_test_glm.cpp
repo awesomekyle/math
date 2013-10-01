@@ -585,7 +585,6 @@ TEST_FIXTURE(Mat3Fixture, Mat3MultiplyVector)
     glm::vec3 u(x,y,z);
     Vec3 v = vec3_create(x,y,z);
 
-    a = glm::transpose(a);
     u = a * u;
     v = mat3_mul_vector(v, i);
     CHECK_EQUAL_VEC3((float*)&u, (float*)&v);
