@@ -11,8 +11,10 @@
     #pragma warning(disable:4204) /* Nonstandard extension: non-constant aggregate initializer */
 
     /* MSVC doens't define fminf and fmaxf */
+    #if _MSC_VER < 1800
     static float fminf(float a, float b) { return (a < b ? a : b); }
     static float fmaxf(float a, float b) { return (a > b ? a : b); }
+    #endif
 #endif
 
 /**
