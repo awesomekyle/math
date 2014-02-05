@@ -12,8 +12,8 @@
 
     /* MSVC doens't define fminf and fmaxf */
     #if _MSC_VER < 1800
-    static float fminf(float a, float b) { return (a < b ? a : b); }
-    static float fmaxf(float a, float b) { return (a > b ? a : b); }
+        static float fminf(float a, float b) { return (a < b ? a : b); }
+        static float fmaxf(float a, float b) { return (a > b ? a : b); }
     #endif
 #endif
 
@@ -1111,7 +1111,7 @@ INLINE Mat4 mat4_perspective_fov(float fov, float aspect, float nearPlane, float
     m.r1.y = y;
     m.r2.z = farPlane/(farPlane-nearPlane);
     m.r2.w = 1;
-    m.r3.z = -nearPlane*farPlane/(farPlane-nearPlane);
+    m.r3.z = (-nearPlane*farPlane)/(farPlane-nearPlane);
     m.r3.w = 0;
     return m;
 }
