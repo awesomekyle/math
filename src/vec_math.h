@@ -1286,4 +1286,6 @@ INLINE Mat4 transform_get_matrix(TRANSFORM_INPUT t)
     #pragma warning(pop)
 #endif
 
+#undef swapf
+
 #endif /* include guard */
