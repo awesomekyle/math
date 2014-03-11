@@ -837,24 +837,30 @@ TEST(ConstructPlaneFromPoints)
 {
     DirectX::XMVECTOR    a,b,c;
     Vec3        i,j,k;
-    float       s,s2,s3,s4;
+    float x,y,z;
 
-    {
-        memset(&a, 0, sizeof(DirectX::XMVECTOR)*3);
-        int count = 0;
-        float* _a = (float*)&a;
-        float* _b = (float*)&i;
-        float* end = _a +  sizeof(a)/sizeof(float) * 3;
-        while(_a != end) {
-            *_b = *_a = _rand_float(-50.0f, 50.0f);
-            ++_a, ++_b;
-            if(++count % 3 == 0)
-                ++_a;
-        }
-        s = s2 = s3 = s4 = _rand_float(-50.0f, 50.0f);
-    }
+    x = _rand_float(-500.0f, 500.0f),
+    y = _rand_float(-500.0f, 500.0f),
+    z = _rand_float(-500.0f, 500.0f);
+    a = DirectX::XMVectorSet(x,y,z,0);
+    i = vec3_create(x,y,z);
+    
+    x = _rand_float(-500.0f, 500.0f),
+    y = _rand_float(-500.0f, 500.0f),
+    z = _rand_float(-500.0f, 500.0f);
+    b = DirectX::XMVectorSet(x,y,z,0);
+    j = vec3_create(x,y,z);
+    
+    x = _rand_float(-500.0f, 500.0f),
+    y = _rand_float(-500.0f, 500.0f),
+    z = _rand_float(-500.0f, 500.0f);
+    c = DirectX::XMVectorSet(x,y,z,0);
+    k = vec3_create(x,y,z);
+
     XMVECTOR p1 = XMPlaneFromPoints(a,b,c);
     Plane p2 = plane_from_points(i,j,k);
+    CHECK_EQUAL_VEC4((float*)&p1, (float*)&p2);
+    p1.vector4_f32[0] = p2.x;
 }
 
 } // anonymous namespace
