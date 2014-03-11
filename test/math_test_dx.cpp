@@ -829,4 +829,32 @@ TEST(TransformToMatrix)
     CHECK_EQUAL_MAT4((float*)&a, (float*)&i);
 }
 
+
+/******************************************************************************\
+ * Plane                                                                      *
+\******************************************************************************/
+TEST(ConstructPlaneFromPoints)
+{
+    DirectX::XMVECTOR    a,b,c;
+    Vec3        i,j,k;
+    float       s,s2,s3,s4;
+
+    {
+        memset(&a, 0, sizeof(DirectX::XMVECTOR)*3);
+        int count = 0;
+        float* _a = (float*)&a;
+        float* _b = (float*)&i;
+        float* end = _a +  sizeof(a)/sizeof(float) * 3;
+        while(_a != end) {
+            *_b = *_a = _rand_float(-50.0f, 50.0f);
+            ++_a, ++_b;
+            if(++count % 3 == 0)
+                ++_a;
+        }
+        s = s2 = s3 = s4 = _rand_float(-50.0f, 50.0f);
+    }
+    XMVECTOR p1 = XMPlaneFromPoints(a,b,c);
+    Plane p2 = plane_from_points(i,j,k);
+}
+
 } // anonymous namespace

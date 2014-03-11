@@ -15,6 +15,9 @@
         static float fminf(float a, float b) { return (a < b ? a : b); }
         static float fmaxf(float a, float b) { return (a > b ? a : b); }
     #endif
+#else
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wc99-extensions"
 #endif
 
 /**
@@ -47,6 +50,7 @@ typedef struct Transform
     Vec3        position;
     float       scale;
 } Transform;
+typedef Vec4 Plane;
 
 /**
  * Constants
@@ -67,6 +71,7 @@ extern "C" { // C linkage
     typedef const Mat3& MAT3_INPUT;
     typedef const Mat4& MAT4_INPUT;
     typedef const Quaternion& QUAT_INPUT;
+    typedef const Plane& PLANE_INPUT;
     typedef const Transform& TRANSFORM_INPUT;
     #define INLINE inline
 #else
@@ -76,6 +81,7 @@ extern "C" { // C linkage
     typedef Mat3 MAT3_INPUT;
     typedef Mat4 MAT4_INPUT;
     typedef Quaternion QUAT_INPUT;
+    typedef Plane PLANE_INPUT;
     typedef Transform TRANSFORM_INPUT;
     #define INLINE static __inline
 #endif
@@ -1298,6 +1304,14 @@ INLINE Mat4 transform_get_matrix(TRANSFORM_INPUT t)
     return ret;
 }
 
+/******************************************************************************\
+ * Plane                                                                      *
+\******************************************************************************/
+static Plane plane_from_points(VEC3_INPUT a, VEC3_INPUT b, VEC3_INPUT c)
+{
+    return vec4_from_vec3(vec3_add(a, vec3_add(b, c)), 0.0f);
+}
+
 #ifdef __cplusplus
 } // extern "C" {
 #endif
@@ -1305,6 +1319,8 @@ INLINE Mat4 transform_get_matrix(TRANSFORM_INPUT t)
 
 #ifdef _MSC_VER
     #pragma warning(pop)
+#else
+    #pragma GCC diagnostic pop
 #endif
 
 #undef swapf
