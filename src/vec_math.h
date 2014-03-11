@@ -85,6 +85,20 @@ INLINE float deg_to_rad(float d) { return kDegToRad*d; }
 
 #define swapf(a, b) { float t = a; a = b; b = t; }
 
+INLINE float lerp(float a, float b, float t)
+{
+    float d = b-a;
+    float tt = d * t;
+    return a + tt;
+}
+INLINE float saturate(float f)
+{
+    if(f < 0)
+        return 0.0f;
+    if(f > 1.0f)
+        return 1.0f;
+    return f;
+}
 /******************************************************************************\
  * Vec2                                                                       *
 \******************************************************************************/
@@ -1251,7 +1265,14 @@ static const Transform transform_zero = {
     {0,0,0},
     1
 };
-
+INLINE Transform transform_lerp(TRANSFORM_INPUT a, TRANSFORM_INPUT b, float t)
+{
+    Transform T;
+    T.orientation = vec4_lerp(a.orientation, b.orientation, t);
+    T.position = vec3_lerp(a.position, b.position, t);
+    T.scale = lerp(a.scale, b.scale, t);
+    return T;
+}
 INLINE Mat4 transform_get_matrix(TRANSFORM_INPUT t)
 {
     Quaternion q = t.orientation;
