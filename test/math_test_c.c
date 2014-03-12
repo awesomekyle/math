@@ -7,6 +7,8 @@
 
 #ifdef _MSC_VER
     #pragma warning(disable:4204) /* non-constant aggregate initializer */
+#else
+    #pragma GCC diagnostic ignored "-Wc99-extensions"
 #endif
 
 static float _rand_float(float min, float max)
@@ -38,7 +40,7 @@ TEST(SpherePlaneCollision)
         _rand_float( -50.0f, 50.0f )
     };
     Plane p = plane_from_point_normal(pt, n);
-    Sphere s = {0.0f};
+    Sphere s = { { 0.0f, 0.0f, 0.0f }, 0.0f };
 
     n = vec3_normalize(n);
     p = plane_from_point_normal(pt, n);
