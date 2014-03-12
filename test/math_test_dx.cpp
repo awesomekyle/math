@@ -918,5 +918,22 @@ TEST(PointDistanceFromPlane)
 
     CHECK_EQUAL_FLOAT(XMVectorGetX(XMPlaneDotCoord(p1, pt1)), plane_distance_point(p2, pt2));
 }
+TEST(NormalizePlane)
+{
+    float x,y,z,w;
+
+    x = _rand_float(-500.0f, 500.0f),
+    y = _rand_float(-500.0f, 500.0f),
+    z = _rand_float(-500.0f, 500.0f);
+    w = _rand_float(-500.0f, 500.0f);
+
+    XMVECTOR p1 = XMVectorSet(x,y,z,w);
+    Plane p2 = {x,y,z,w};
+    CHECK_EQUAL_VEC4((float*)&p1, (float*)&p2);
+
+    p1 = XMPlaneNormalize(p1);
+    p2 = plane_normalize(p2);
+    CHECK_EQUAL_VEC4((float*)&p1, (float*)&p2);
+}
 
 } // anonymous namespace
