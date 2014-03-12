@@ -1307,9 +1307,31 @@ INLINE Mat4 transform_get_matrix(TRANSFORM_INPUT t)
 /******************************************************************************\
  * Plane                                                                      *
 \******************************************************************************/
-static Plane plane_from_points(VEC3_INPUT a, VEC3_INPUT b, VEC3_INPUT c)
+INLINE Plane plane_from_points(VEC3_INPUT a, VEC3_INPUT b, VEC3_INPUT c)
 {
-    return vec4_from_vec3(vec3_add(a, vec3_add(b, c)), 0.0f);
+    Plane p;
+    Vec3 side1 = vec3_sub(a,b);
+    Vec3 side2 = vec3_sub(b,c);
+    
+    p = vec4_from_vec3(vec3_normalize(vec3_cross(side1, side2)), 0.0f);
+    
+    p.w = -( p.x * a.x +
+             p.y * a.y +
+             p.z * a.z );
+    
+    return p;
+}
+INLINE Plane plane_from_point_normal(VEC3_INPUT pt, VEC3_INPUT norm)
+{
+    float D = -(norm.x * pt.x +
+                norm.y * pt.y +
+                norm.z * pt.z );
+    return vec4_from_vec3(norm, D);
+}
+INLINE float plane_distance_point(PLANE_INPUT p, VEC3_INPUT pt)
+{
+    float dot = vec3_dot(pt, *(Vec3*)&p);
+    return dot + p.w;
 }
 
 #ifdef __cplusplus

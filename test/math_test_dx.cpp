@@ -860,7 +860,63 @@ TEST(ConstructPlaneFromPoints)
     XMVECTOR p1 = XMPlaneFromPoints(a,b,c);
     Plane p2 = plane_from_points(i,j,k);
     CHECK_EQUAL_VEC4((float*)&p1, (float*)&p2);
-    p1.vector4_f32[0] = p2.x;
+}
+TEST(ConstructPlaneFromPointNormal)
+{
+    DirectX::XMVECTOR    a,an;
+    Vec3        i,in;
+    float x,y,z;
+
+    x = _rand_float(-500.0f, 500.0f),
+    y = _rand_float(-500.0f, 500.0f),
+    z = _rand_float(-500.0f, 500.0f);
+    a = DirectX::XMVectorSet(x,y,z,0);
+    i = vec3_create(x,y,z);
+    
+    x = _rand_float(-500.0f, 500.0f),
+    y = _rand_float(-500.0f, 500.0f),
+    z = _rand_float(-500.0f, 500.0f);
+    an = DirectX::XMVectorSet(x,y,z,0);
+    in = vec3_create(x,y,z);
+
+    an = DirectX::XMVector3Normalize(an);
+    in = vec3_normalize(in);
+
+    XMVECTOR p1 = XMPlaneFromPointNormal(a, an);
+    Plane p2 = plane_from_point_normal(i, in);
+    CHECK_EQUAL_VEC4((float*)&p1, (float*)&p2);
+}
+TEST(PointDistanceFromPlane)
+{
+    DirectX::XMVECTOR    a,an;
+    Vec3        i,in;
+    float x,y,z;
+
+    x = _rand_float(-500.0f, 500.0f),
+    y = _rand_float(-500.0f, 500.0f),
+    z = _rand_float(-500.0f, 500.0f);
+    a = DirectX::XMVectorSet(x,y,z,0);
+    i = vec3_create(x,y,z);
+    
+    x = _rand_float(-500.0f, 500.0f),
+    y = _rand_float(-500.0f, 500.0f),
+    z = _rand_float(-500.0f, 500.0f);
+    an = DirectX::XMVectorSet(x,y,z,0);
+    in = vec3_create(x,y,z);
+
+    an = DirectX::XMVector3Normalize(an);
+    in = vec3_normalize(in);
+
+    XMVECTOR p1 = XMPlaneFromPointNormal(a, an);
+    Plane p2 = plane_from_point_normal(i, in);
+    
+    x = _rand_float(-500.0f, 500.0f),
+    y = _rand_float(-500.0f, 500.0f),
+    z = _rand_float(-500.0f, 500.0f);
+    DirectX::XMVECTOR pt1 = DirectX::XMVectorSet(x,y,z,0);
+    Vec3 pt2 = vec3_create(x,y,z);
+
+    CHECK_EQUAL_FLOAT(XMVectorGetX(XMPlaneDotCoord(p1, pt1)), plane_distance_point(p2, pt2));
 }
 
 } // anonymous namespace

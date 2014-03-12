@@ -24,6 +24,9 @@
     <ClCompile Include="test\math_test_dx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test\math_test_glm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\vec_math.h">

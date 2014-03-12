@@ -3,6 +3,11 @@
  */
 #include "unit_test.h"
 
+#ifdef _MSC_VER
+    #pragma warning(disable:4201) /* non-constant aggregate initializer */
+    #pragma warning(disable:4505) /* Unreferenced function */
+#endif
+
 #include "vec_math.h"
 #define GLM_FORCE_RADIANS
 #include "glm/glm.hpp"
@@ -774,5 +779,6 @@ TEST_FIXTURE(QuaternionFixture, Multiply)
     i = quat_multiply(j, k);
     CHECK_EQUAL_VEC4((float*)&a, (float*)&i);
 }
+
 
 } // anonymous namespace
