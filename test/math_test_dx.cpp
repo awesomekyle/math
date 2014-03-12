@@ -51,7 +51,7 @@ float _rand_float(float min, float max)
 {
     float f = rand()/(float)RAND_MAX;
     f *= (max-min);
-    return f-min;
+    return f+min;
 }
 
 /******************************************************************************\
