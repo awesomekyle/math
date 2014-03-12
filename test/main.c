@@ -19,6 +19,9 @@ static void register_tests(void)
 int main(int argc, const char* argv[])
 {
     srand((unsigned int)time(NULL));
+    #if DEBUG_TESTS
+        FORCE_RUN_ALL_TESTS(argc, argv, "-t", register_tests);
+    #endif
     RUN_ALL_TESTS(argc, argv, "-t", register_tests);
 
     return 0;

@@ -51,6 +51,11 @@ typedef struct Transform
     float       scale;
 } Transform;
 typedef Vec4 Plane;
+typedef struct Sphere
+{
+    Vec3 center;
+    float radius;
+} Sphere;
 
 /**
  * Constants
@@ -72,6 +77,7 @@ extern "C" { // C linkage
     typedef const Mat4& MAT4_INPUT;
     typedef const Quaternion& QUAT_INPUT;
     typedef const Plane& PLANE_INPUT;
+    typedef const Sphere& SPHERE_INPUT;
     typedef const Transform& TRANSFORM_INPUT;
     #define INLINE inline
 #else
@@ -82,6 +88,7 @@ extern "C" { // C linkage
     typedef Mat4 MAT4_INPUT;
     typedef Quaternion QUAT_INPUT;
     typedef Plane PLANE_INPUT;
+    typedef Sphere SPHERE_INPUT;
     typedef Transform TRANSFORM_INPUT;
     #define INLINE static __inline
 #endif
@@ -1323,15 +1330,27 @@ INLINE Plane plane_from_points(VEC3_INPUT a, VEC3_INPUT b, VEC3_INPUT c)
 }
 INLINE Plane plane_from_point_normal(VEC3_INPUT pt, VEC3_INPUT norm)
 {
-    float D = -(norm.x * pt.x +
-                norm.y * pt.y +
-                norm.z * pt.z );
-    return vec4_from_vec3(norm, D);
+    Vec3 N = vec3_normalize(norm);
+    float D = -(N.x * pt.x +
+                N.y * pt.y +
+                N.z * pt.z );
+    return vec4_from_vec3(N, D);
 }
 INLINE float plane_distance_point(PLANE_INPUT p, VEC3_INPUT pt)
 {
     float dot = vec3_dot(pt, *(Vec3*)&p);
     return dot + p.w;
+}
+
+/******************************************************************************\
+ * Sphere                                                                     *
+\******************************************************************************/
+INLINE int sphere_plane_intersect(PLANE_INPUT p, SPHERE_INPUT s)
+{
+    float dist = plane_distance_point(p, s.center);
+    if(fabsf(dist) < s.radius)
+        return 1;
+    return 0;
 }
 
 #ifdef __cplusplus

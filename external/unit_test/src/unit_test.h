@@ -181,6 +181,14 @@ int run_all_tests(int argc, const char* argv[]);
             }                                       \
     } while(__LINE__ == -1)
 
+#define FORCE_RUN_ALL_TESTS(argc, argv, test_arg, register_func) \
+    do {                                    \
+        test_func_t* _reg = register_func;  \
+        if(_reg)                            \
+            _reg();                         \
+        run_all_tests(argc, argv);   \
+    } while(__LINE__ == -1)
+
 #ifdef __cplusplus
     } // extern "C" {
 #endif

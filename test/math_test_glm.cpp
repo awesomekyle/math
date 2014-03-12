@@ -4,7 +4,7 @@
 #include "unit_test.h"
 
 #ifdef _MSC_VER
-    #pragma warning(disable:4201) /* non-constant aggregate initializer */
+    #pragma warning(disable:4201) /* nameless struct */
     #pragma warning(disable:4505) /* Unreferenced function */
 #endif
 
