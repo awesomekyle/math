@@ -10,16 +10,18 @@ include(gmock)
 include(glm)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
-    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+	"${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+	"${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     set(compiler_flags "-Wall -Wextra -Werror")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${compiler_flags} -fno-exceptions -fno-rtti")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${compiler_flags}")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(compiler_flags "/W4 /WX /EHsc /MP /sdl")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${compiler_flags}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${compiler_flags}")
 	string(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable C++ exceptions
     string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable RTTI
 endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${compiler_flags} -fno-exceptions -fno-rtti")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${compiler_flags}")
 
 add_definitions(-D_HAS_EXCEPTIONS=0)
 
