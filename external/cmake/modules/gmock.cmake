@@ -21,12 +21,14 @@ set_property(TARGET gtest PROPERTY FOLDER "GTest")
 set_property(TARGET gmock_main PROPERTY FOLDER "GTest")
 set_property(TARGET gtest_main PROPERTY FOLDER "GTest")
 
-set_target_properties(gmock PROPERTIES COMPILE_FLAGS "-w")
-set_target_properties(gtest PROPERTIES COMPILE_FLAGS "-w")
-set_target_properties(gmock_main PROPERTIES COMPILE_FLAGS "-w")
-set_target_properties(gtest_main PROPERTIES COMPILE_FLAGS "-w")
-
-string(REGEX REPLACE "/W4" "/W0" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable warnings
+if(NOT MSVC)
+  set_target_properties(gmock PROPERTIES COMPILE_FLAGS "-w")
+  set_target_properties(gtest PROPERTIES COMPILE_FLAGS "-w")
+  set_target_properties(gmock_main PROPERTIES COMPILE_FLAGS "-w")
+  set_target_properties(gtest_main PROPERTIES COMPILE_FLAGS "-w")
+else()
+  string(REGEX REPLACE "/W4" "/W0" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable warnings
+endif()
 
 include_directories(SYSTEM ${GMOCK_DIR}/gtest/include
 						   ${GMOCK_DIR}/include)
