@@ -7,6 +7,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/external/cmake/Modules)
 
 enable_testing()
 include(gmock)
+include(glm)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -23,6 +24,7 @@ endif()
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
 
 add_subdirectory(test)
 

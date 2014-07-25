@@ -1,3 +1,9 @@
-add_gmock_test(MathTest 
-    ${PROJECT_SOURCE_DIR}/src/vec_math.h
-    math_test_gtest.cpp)
+set(SOURCES 
+	${PROJECT_SOURCE_DIR}/src/vec_math.h
+	math_test_glm.cpp)
+
+if(MSVC)
+	set(SOURCES ${SOURCES} math_test_dx.cpp)
+endif()
+
+add_gmock_test(MathTest ${SOURCES})
