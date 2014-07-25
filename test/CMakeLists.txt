@@ -1,5 +1,7 @@
 set(SOURCES 
 	${PROJECT_SOURCE_DIR}/src/vec_math.h
+	math_test.cpp
+	math_test_c.c
 	math_test_glm.cpp)
 
 if(MSVC)

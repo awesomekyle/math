@@ -1,4 +1,7 @@
-#include "vec_math.h"
+/** @file math_test_dx.cpp
+ *  @copyright Copyright (c) 2014 Kyle Weicht. All rights reserved.
+ */
+ #include "vec_math.h"
 
 #include <gmock/gmock.h>
 using ::testing::Eq;
@@ -12,20 +15,20 @@ using ::testing::Test;
 using namespace DirectX;
 
 #define EXPECT_VEC2_EQ(a,b) \
-    EXPECT_FLOAT_EQ((a)[0], (b)[0]); \
-    EXPECT_FLOAT_EQ((a)[1], (b)[1])
+    EXPECT_NEAR((a)[0], (b)[0], 0.001f); \
+    EXPECT_NEAR((a)[1], (b)[1], 0.001f)
 
 #define EXPECT_VEC3_EQ(a,b) \
-    EXPECT_FLOAT_EQ((a)[0], (b)[0]); \
-    EXPECT_FLOAT_EQ((a)[1], (b)[1]); \
-    EXPECT_FLOAT_EQ((a)[2], (b)[2])
+    EXPECT_NEAR((a)[0], (b)[0], 0.001f); \
+    EXPECT_NEAR((a)[1], (b)[1], 0.001f); \
+    EXPECT_NEAR((a)[2], (b)[2], 0.001f)
 
     
 #define EXPECT_VEC4_EQ(a,b) \
-    EXPECT_FLOAT_EQ((a)[0], (b)[0]); \
-    EXPECT_FLOAT_EQ((a)[1], (b)[1]); \
-    EXPECT_FLOAT_EQ((a)[2], (b)[2]); \
-    EXPECT_FLOAT_EQ((a)[3], (b)[3])
+    EXPECT_NEAR((a)[0], (b)[0], 0.001f); \
+    EXPECT_NEAR((a)[1], (b)[1], 0.001f); \
+    EXPECT_NEAR((a)[2], (b)[2], 0.001f); \
+    EXPECT_NEAR((a)[3], (b)[3], 0.001f)
 
 #define EXPECT_MAT3_EQ(expected, actual)  \
     XMFLOAT3X3 _m;                           \
@@ -40,7 +43,7 @@ using namespace DirectX;
         EXPECT_NEAR((expected)[ii], (actual)[ii], 0.001f);    \
     }
 
-namespace 
+namespace DXTests
 {
 
 #ifndef _XM_NO_INTRINSICS_
