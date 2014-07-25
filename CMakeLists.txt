@@ -11,17 +11,20 @@ include(glm)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(warnings "-Wall -Wextra -Werror")
+    set(compiler_flags "-Wall -Wextra -Werror -fno-exceptions -fno-rtti")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    set(warnings "/W4 /WX /EHsc /MP /sdl")
+    set(compiler_flags "/W4 /WX /EHsc /MP /sdl")
+	string(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable C++ exceptions
+    string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable RTTI
 endif()
 if (NOT CONFIGURED_ONCE)
-    set(CMAKE_CXX_FLAGS "${warnings}"
+    set(CMAKE_CXX_FLAGS "${compiler_flags}"
         CACHE STRING "Flags used by the compiler during all build types." FORCE)
-    set(CMAKE_C_FLAGS   "${warnings}"
+    set(CMAKE_C_FLAGS   "${compiler_flags}"
         CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
 
+add_definitions(-D_HAS_EXCEPTIONS=0)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
