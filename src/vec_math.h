@@ -15,7 +15,7 @@
         static float fminf(float a, float b) { return (a < b ? a : b); }
         static float fmaxf(float a, float b) { return (a > b ? a : b); }
     #endif
-#else
+#elif defined(__clang__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wc99-extensions"
 #endif
