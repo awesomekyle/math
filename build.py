@@ -10,6 +10,7 @@ import argparse
 #
 parser = argparse.ArgumentParser()
 parser.add_argument("-b", "--build", help="If you want the source to be built", action="store_true")
+parser.add_argument("-c", "--config", help="Configuration to build (debug, release, etc.)", default="Debug")
 args = parser.parse_args()
 
 if not os.path.isdir("_build"):
@@ -28,7 +29,7 @@ elif platform.system() == "Windows":
     sh = True
 
 # Run CMake
-cmakeCmd = ["cmake", '-G', generator, ".."]
+cmakeCmd = ["cmake", '-G', generator, '-DCMAKE_BUILD_TYPE=' + args.config, ".."]
 retCode = subprocess.check_call(cmakeCmd, stderr=subprocess.STDOUT, shell=sh)
 
 if not args.build:
@@ -42,9 +43,7 @@ if platform.system() == "Windows":
     from _winreg import *
     aKey = OpenKey(HKEY_LOCAL_MACHINE, r"SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\4.0")
     value  = QueryValueEx(aKey, "MSBuildToolsPath")
-    buildCmd = [value[0] + "msbuild", "/p:Configuration=Debug", "/m", "Math.sln"]
-    retCode = subprocess.check_call(buildCmd, stderr=subprocess.STDOUT, shell=sh)
-    buildCmd = [value[0] + "msbuild", "/p:Configuration=Release", "/m", "Math.sln"]
+    buildCmd = [value[0] + "msbuild", "/p:Configuration=" + args.config, "/m", "Dominion.sln"]
     retCode = subprocess.check_call(buildCmd, stderr=subprocess.STDOUT, shell=sh)
 
 elif platform.system() == "Darwin":
