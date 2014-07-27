@@ -42,9 +42,9 @@ if platform.system() == "Windows":
     from _winreg import *
     aKey = OpenKey(HKEY_LOCAL_MACHINE, r"SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\4.0")
     value  = QueryValueEx(aKey, "MSBuildToolsPath")
-    buildCmd = [value[0] + "msbuild", "/p:Configuration=Debug", "/m", "${CMAKE_PROJECT_NAME}.sln"]
+    buildCmd = [value[0] + "msbuild", "/p:Configuration=Debug", "/m", "Math.sln"]
     retCode = subprocess.check_call(buildCmd, stderr=subprocess.STDOUT, shell=sh)
-    buildCmd = [value[0] + "msbuild", "/p:Configuration=Release", "/m", "${CMAKE_PROJECT_NAME}.sln"]
+    buildCmd = [value[0] + "msbuild", "/p:Configuration=Release", "/m", "Math.sln"]
     retCode = subprocess.check_call(buildCmd, stderr=subprocess.STDOUT, shell=sh)
 
 elif platform.system() == "Darwin":
