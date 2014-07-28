@@ -1349,7 +1349,7 @@ INLINE Plane plane_normalize(PLANE_INPUT p)
 }
 INLINE float plane_distance_point(PLANE_INPUT p, VEC3_INPUT pt)
 {
-    float dot = vec3_dot(pt, *(Vec3*)&p);
+    float dot = vec3_dot(pt, vec3_from_vec4(p));
     return dot + p.w;
 }
 
