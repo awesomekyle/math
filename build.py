@@ -46,8 +46,7 @@ if platform.system() == "Windows":
     buildCmd = [value[0] + "msbuild", "/p:Configuration=" + args.config, "/m", "Math.sln"]
     retCode = subprocess.check_call(buildCmd, stderr=subprocess.STDOUT, shell=sh)
 
-elif platform.system() == "Darwin":
+elif platform.system() == "Darwin" or platform.system() == "Linux":
     buildCmd = ["make", "-j"]
     retCode = subprocess.check_call(buildCmd, stderr=subprocess.STDOUT, shell=sh)
-
 
