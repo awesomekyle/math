@@ -10,6 +10,9 @@ import json
 import base64
 import time
 import ast
+if platform.system() == "Windows":
+    from _winreg import *
+
 
 #
 # Parse command line
@@ -187,7 +190,7 @@ class Jenkins:
         generatorList = {
             'win' : [ 'Visual Studio 11 Win64', 'Visual Studio 12 Win64' ],
             'mac' : [ 'Unix Makefiles', 'Xcode' ],
-            'lin' : [ 'Unix Makefiles' ]
+            'lin' : [ 'Unix Makefiles - gcc', 'Unix Makefiles - clang' ]
         }
         targetList = { "win", "mac", "lin" }
         configList = { "Release", "Debug" }
@@ -248,13 +251,23 @@ if args.jenkins:
 # CMake
 #
 class CMakeBuilder:
-    def __init__(self, path, generator, config):
+    def __init__(self, path, generator, compiler, config):
         self.path = path
         self.generator = generator
         self.config = config
+        self.compiler = compiler
 
     def run(self):
-        cmakeCmd = ["cmake", '-G', self.generator, '-DCMAKE_BUILD_TYPE=' + self.config, self.path]
+        if platform.system() == "Linux":
+            cxxCompilers = {
+                "gcc" : "g++",
+                "clang" : "clang++"
+            }
+            cmakeCmd = ["cmake", '-G', self.generator, '-DCMAKE_BUILD_TYPE=' + self.config, '-DCMAKE_C_COMPILER=' + self.compiler, '-DCMAKE_CXX_COMPILER=' + cxxCompilers[self.compiler], self.path]
+        else:
+            cmakeCmd = ["cmake", '-G', self.generator, '-DCMAKE_BUILD_TYPE=' + self.config, self.path]
+        if self.generator == None:
+            cmakeCmd = ["cmake", '-DCMAKE_BUILD_TYPE=' + self.config, self.path]
         retCode = subprocess.check_call(cmakeCmd, stderr=subprocess.STDOUT, shell=sh)
 
 #
@@ -266,10 +279,9 @@ class VisualStudioBuilder:
         self.generator = generator
 
     def build(self):
-        from _winreg import *
-        if '12' in generator:
+        try:
             aKey = OpenKey(HKEY_LOCAL_MACHINE, r"SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\12.0")
-        else:
+        except:
             aKey = OpenKey(HKEY_LOCAL_MACHINE, r"SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\4.0")
         value  = QueryValueEx(aKey, "MSBuildToolsPath")
         buildCmd = [value[0] + "msbuild", "/p:Configuration=" + args.config, "/m", self.solution]
@@ -280,6 +292,7 @@ class VisualStudioBuilder:
 # 
 class MakefileBuilder:
     def build(self):
+        print "Running makefile"
         buildCmd = ["make", "-j"]
         return subprocess.check_call(buildCmd, stderr=subprocess.STDOUT, shell=sh)
     
@@ -294,16 +307,18 @@ class XcodeBuilder:
 # Run CMake
 print "\n===\nStarting CMake\n===\n"
 
-if platform.system() == "Darwin" or platform.system() == "Linux":
-    generator = "Unix Makefiles"
+compiler = None
+generator = args.generator
+if platform.system() == "Darwin":
+    sh = False 
+elif platform.system() == "Linux":
+    if args.generator != None and ' - ' in args.generator:
+        generator, sep, compiler = args.generator.rpartition(' - ') 
     sh = False 
 elif platform.system() == "Windows":
-    generator = "Visual Studio 11 Win64"
     sh = True
-if args.generator != None:
-    generator = args.generator
 
-cmakeBuilder = CMakeBuilder('..', generator, args.config)
+cmakeBuilder = CMakeBuilder('..', generator, compiler, args.config)
 cmakeBuilder.run()
 
 if not args.build:
@@ -311,14 +326,14 @@ if not args.build:
 print "\n===\nStarting Build\n===\n"
 
 # Build
-if "Visual Studio" in generator:
+if platform.system() == "Windows":
     vsBuilder = VisualStudioBuilder("Math.sln", generator)
     retCode = vsBuilder.build()
-elif "Makefile" in generator:
-    makefileBuilder = MakefileBuilder()
-    retCode = makefileBuilder.build()
 elif "Xcode" in generator:
     xcodeBuilder = XcodeBuilder()
     retCode = xcodeBuilder.build()
+else:
+    makefileBuilder = MakefileBuilder()
+    retCode = makefileBuilder.build()
 
 sys.exit(retCode)
