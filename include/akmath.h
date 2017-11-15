@@ -658,8 +658,7 @@ __forceinline Mat4 MultiplyAvx(Mat4 const& a, Mat4 const& b)
     __m256 t2 = _mm256_hadd_ps(t0, t1);
     t2 = _mm256_permutevar8x32_ps(t2, mask);
 
-    _mm_store_ps(&result.c0.x, _mm256_extractf128_ps(t2, 0));
-    _mm_store_ps(&result.c1.x, _mm256_extractf128_ps(t2, 1));
+    _mm256_store_ps(&result.c0.x, t2);
 
     // c2 & t3
     xy0 = _mm256_mul_ps(a_r0r1, b_c2);
@@ -677,8 +676,7 @@ __forceinline Mat4 MultiplyAvx(Mat4 const& a, Mat4 const& b)
     t2 = _mm256_hadd_ps(t0, t1);
     t2 = _mm256_permutevar8x32_ps(t2, mask);
 
-    _mm_store_ps(&result.c2.x, _mm256_extractf128_ps(t2, 0));
-    _mm_store_ps(&result.c3.x, _mm256_extractf128_ps(t2, 1));
+    _mm256_store_ps(&result.c2.x, t2);
 
     return result;
 }
@@ -759,7 +757,7 @@ __forceinline Mat4 MultiplyAvx512(Mat4 const& a, Mat4 const& b)
 
     return result;
 }
-__forceinline Mat4 operator*(Mat4 const a, Mat4 const b)
+__forceinline Mat4 operator*(Mat4 const& a, Mat4 const& b)
 {
     return MultiplyAvx(a, b);
 }

@@ -2,6 +2,7 @@
 #include <benchmark/benchmark.h>
 #include <glm/glm.hpp>
 #include <DirectXMath.h>
+#pragma warning(disable : 4577)  // 'noexcept' used
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
@@ -40,6 +41,21 @@ void FillVec(glm::vec3& v)
     v = {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)};
 }
 void FillVec(glm::vec4& v)
+{
+    v = {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)};
+}
+
+// Eigen
+void FillVec(Eigen::Vector2f& v)
+{
+    v = {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)};
+}
+void FillVec(Eigen::Vector3f& v)
+{
+    v = {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)};
+}
+void FillVec(Eigen::Vector4f& v)
 {
     v = {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
          RandFloat(-50.0f, 50.0f)};
@@ -246,57 +262,52 @@ void FillMatrix(Eigen::Matrix4f& m)
         RandFloat(-50.0f, 50.0f);
 }
 
-void DxMat4Multiplication(benchmark::State& state)
-{
-    DirectX::XMMATRIX m1, m2;
-    FillMatrix(m1);
-    FillMatrix(m2);
-    for (auto _ : state) {
-        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
-            benchmark::DoNotOptimize(m1 * m2);
-        }
-    }
-}
-BENCHMARK(DxMat4Multiplication);
-
-void GlmMat4Multiplication(benchmark::State& state)
-{
-    glm::mat4 m1, m2;
-    FillMatrix(m1);
-    FillMatrix(m2);
-    for (auto _ : state) {
-        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
-            benchmark::DoNotOptimize(m1 * m2);
-        }
-    }
-}
-BENCHMARK(GlmMat4Multiplication);
-
-void EigenMat4Multiplication(benchmark::State& state)
-{
-    Eigen::Matrix4f m1, m2;
-    FillMatrix(m1);
-    FillMatrix(m2);
-    for (auto _ : state) {
-        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
-            benchmark::DoNotOptimize((Eigen::Matrix4f)(m1 * m2));
-        }
-    }
-}
-BENCHMARK(EigenMat4Multiplication);
-
+template<typename Matrix>
 void Mat4Multiplication(benchmark::State& state)
 {
-    ak::Mat4 m1, m2;
+    Matrix m1, m2;
     FillMatrix(m1);
     FillMatrix(m2);
     for (auto _ : state) {
-        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
-            benchmark::DoNotOptimize(m1 * m2);
-        }
+        benchmark::DoNotOptimize((Matrix)(m1 * m2));
     }
 }
-BENCHMARK(Mat4Multiplication);
+BENCHMARK_TEMPLATE(Mat4Multiplication, XMMATRIX);
+BENCHMARK_TEMPLATE(Mat4Multiplication, glm::mat4);
+BENCHMARK_TEMPLATE(Mat4Multiplication, Eigen::Matrix4f);
+BENCHMARK_TEMPLATE(Mat4Multiplication, ak::Mat4);
+
+template<typename Matrix, typename Vector>
+void Mat4VecMultiplication(benchmark::State& state)
+{
+    Matrix m1, m2;
+    Vector v1, v2;
+    FillMatrix(m1);
+    FillMatrix(m2);
+    FillVec(v1);
+    FillVec(v2);
+    for (auto _ : state) {
+        benchmark::DoNotOptimize((Vector)(m1 * v1));
+    }
+}
+
+template<>
+void Mat4VecMultiplication<XMMATRIX, XMVECTOR>(benchmark::State& state)
+{
+    XMMATRIX m1, m2;
+    XMVECTOR v1, v2;
+    FillMatrix(m1);
+    FillMatrix(m2);
+    FillVec(v1);
+    FillVec(v2);
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(XMVector4Transform(v1, m1));
+    }
+}
+BENCHMARK_TEMPLATE(Mat4VecMultiplication, XMMATRIX, XMVECTOR);
+BENCHMARK_TEMPLATE(Mat4VecMultiplication, glm::mat4, glm::vec4);
+BENCHMARK_TEMPLATE(Mat4VecMultiplication, Eigen::Matrix4f, Eigen::Vector4f);
+BENCHMARK_TEMPLATE(Mat4VecMultiplication, ak::Mat4, ak::Vec4);
 
 void DxMat4Inverse(benchmark::State& state)
 {
