@@ -286,8 +286,8 @@ inline Mat3 Mat3::RotationX(float const rad)
     float const s = sinf(rad);
     return {
         {1, 0, 0},
-        {0, c, -s},
-        {0, s, c},
+        {0, c, s},
+        {0, -s, c},
     };
 }
 inline Mat3 Mat3::RotationY(float const rad)
@@ -295,9 +295,9 @@ inline Mat3 Mat3::RotationY(float const rad)
     float const c = cosf(rad);
     float const s = sinf(rad);
     return {
-        {c, 0, s},
+        {c, 0, -s},
         {0, 1, 0},
-        {-s, 0, c},
+        {s, 0, c},
     };
 }
 inline Mat3 Mat3::RotationZ(float const rad)
@@ -305,8 +305,8 @@ inline Mat3 Mat3::RotationZ(float const rad)
     float const c = cosf(rad);
     float const s = sinf(rad);
     return {
-        {c, -s, 0},
-        {s, c, 0},
+        {c, s, 0},
+        {-s, c, 0},
         {0, 0, 1},
     };
 }
@@ -322,34 +322,41 @@ inline Mat3 Mat3::RotationAxis(Vec3 const axis, float const rad)
     float const z = normAxis.z;
 
     return {
-        {(t * x * x) + c, (t * x * y) - (s * z), (t * x * z) + (s * y)},
-        {(t * x * y) + s * z, (t * y * y) + c, (t * y * z) - (s * x)},
-        {(t * x * z) - s * y, (t * y * z) + (s * x), (t * z * z) + c},
+        {
+            (t * x * x) + c,
+            (t * x * y) + s * z,
+            (t * x * z) - s * y,
+        },
+        {
+            (t * x * y) - (s * z),
+            (t * y * y) + c,
+            (t * y * z) + (s * x),
+        },
+        {
+            (t * x * z) + (s * y),
+            (t * y * z) - (s * x),
+            (t * z * z) + c,
+        },
     };
 }
 inline Mat3 operator*(Mat3 const a, Mat3 const b)
 {
-#define MTX3_INDEX(f, r, c) ((f)[(r * 3) + c])
-
     Mat3 m{};
 
-    const float* left = &a.c0.x;
-    const float* right = &b.c0.x;
-    float* result = (float*)&m;
+    float const(*const left)[3] = (float(*)[3]) & a.c0.x;
+    float const(*const right)[3] = (float(*)[3]) & b.c0.x;
+    float(*result)[3] = (float(*)[3]) & m;
 
-    for (int ii = 0; ii < 3; ++ii) /* row */
+    for (int ii = 0; ii < 3; ++ii) /* column */
     {
-        for (int jj = 0; jj < 3; ++jj) /* column */
+        for (int jj = 0; jj < 3; ++jj) /* row */
         {
-            float sum = MTX3_INDEX(left, ii, 0) * MTX3_INDEX(right, 0, jj);
-            for (int kk = 1; kk < 3; ++kk) {
-                sum += (MTX3_INDEX(left, ii, kk) * MTX3_INDEX(right, kk, jj));
+            for (int kk = 0; kk < 3; ++kk) {
+                result[jj][ii] += (left[kk][ii] * right[jj][kk]);
             }
-            MTX3_INDEX(result, ii, jj) = sum;
         }
     }
     return m;
-#undef MTX3_INDEX
 }
 
 }  // namespace ak

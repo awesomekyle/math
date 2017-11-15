@@ -1,6 +1,34 @@
 #include "akmath.h"
-#include <catch.hpp>
+#include <iostream>
+
+namespace ak {
+
+std::ostream& operator<<(std::ostream& os, ak::Mat3 const& value)
+{
+    os << "{ " << value.c0.x << ", " << value.c0.y << ", " << value.c0.z << " }\n";
+    os << "{ " << value.c1.x << ", " << value.c1.y << ", " << value.c1.z << " }\n";
+    os << "{ " << value.c2.x << ", " << value.c2.y << ", " << value.c2.z << " }";
+    return os;
+}
+
+}  // namespace ak
+
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+namespace glm {
+std::ostream& operator<<(std::ostream& os, glm::mat3 const& value)
+{
+    os << "{ " << value[0][0] << ", " << value[0][1] << ", " << value[0][2] << " }\n";
+    os << "{ " << value[1][0] << ", " << value[1][1] << ", " << value[1][2] << " }\n";
+    os << "{ " << value[2][0] << ", " << value[2][1] << ", " << value[2][2] << " }";
+    return os;
+}
+}  // namespace glm
+
+#include <catch.hpp>
 
 namespace glm {
 
@@ -67,6 +95,25 @@ inline bool operator==(const glm::vec4& g, const ak::Vec4& k)
 inline bool operator==(const ak::Vec4& k, const glm::vec4& g)
 {
     return g == k;
+}
+
+// mat3
+glm::mat3 GlmFromAk(const ak::Mat3& m)
+{
+    return glm::mat3{m.c0.x, m.c0.y, m.c0.z,  //
+                     m.c1.x, m.c1.y, m.c1.z,  //
+                     m.c2.x, m.c2.y, m.c2.z};
+}
+inline bool operator==(const glm::mat3 g, const ak::Mat3& k)
+{
+    float const* const pX = &g[0][0];
+    float const* const pK = &k.c0.x;
+    for (int ii = 0; ii < sizeof(k) / sizeof(k.c0.x); ++ii) {
+        if (pX[ii] != Approx(pK[ii])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 }  // namespace
@@ -372,5 +419,68 @@ TEST_CASE("GLM - vec4 arithmatic", "[vec4]")
     SECTION("negate")
     {
         REQUIRE(-a == -i);
+    }
+}
+
+TEST_CASE("GLM - mat3 arithmatic", "[mat3]")
+{
+    ak::Mat3 const i = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+    };
+    ak::Mat3 const j = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+    };
+    ak::Mat3 const k = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+    };
+
+    glm::mat3 const a = GlmFromAk(i);
+    glm::mat3 const b = GlmFromAk(j);
+    glm::mat3 const c = GlmFromAk(k);
+    float const scalar = RandFloat(-50.0f, 50.0f);
+
+    REQUIRE(a == i);
+    REQUIRE(b == j);
+    REQUIRE(c == k);
+
+    SECTION("identity")
+    {
+        CHECK(glm::mat3() == ak::Mat3::Identity());
+    }
+
+    SECTION("scale")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+        CHECK(glm::scale(glm::mat4(), {x, y, z}) == ak::Mat3::Scaling(x, y, z));
+    }
+
+    SECTION("rotation")
+    {
+        float const r = RandFloat(-50.0f, 50.0f);
+        CHECK(glm::rotate(glm::mat4(), r, {1, 0, 0}) == ak::Mat3::RotationX(r));
+        CHECK(glm::rotate(glm::mat4(), r, {0, 1, 0}) == ak::Mat3::RotationY(r));
+        CHECK(glm::rotate(glm::mat4(), r, {0, 0, 1}) == ak::Mat3::RotationZ(r));
+    }
+    SECTION("axis rotation")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+        auto const glmRotation = (glm::mat3)glm::rotate(glm::mat4(), scalar, {x, y, z});
+        CHECK(glmRotation == ak::Mat3::RotationAxis({x, y, z}, scalar));
+    }
+    SECTION("multiplication")
+    {
+        auto const m1 = a * b;
+        auto const m2 = i * j;
+        CHECK(m1 == m2);
     }
 }
