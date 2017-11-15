@@ -635,20 +635,21 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
     __m256 a_r2r3 = _mm256_castps128_ps256(a_r2);
     a_r2r3 = _mm256_insertf128_ps(a_r2r3, a_r3, 1);
 
-    __m128 b_c0_128 = _mm_load_ps(&b.c0.x);
-    __m128 b_c1_128 = _mm_load_ps(&b.c1.x);
-    __m128 b_c2_128 = _mm_load_ps(&b.c2.x);
-    __m128 b_c3_128 = _mm_load_ps(&b.c3.x);
+    __m128 const b_c0_128 = _mm_load_ps(&b.c0.x);
+    __m128 const b_c1_128 = _mm_load_ps(&b.c1.x);
+    __m128 const b_c2_128 = _mm_load_ps(&b.c2.x);
+    __m128 const b_c3_128 = _mm_load_ps(&b.c3.x);
 
     __m256 b_c0 = _mm256_castps128_ps256(b_c0_128);
     __m256 b_c1 = _mm256_castps128_ps256(b_c1_128);
     __m256 b_c2 = _mm256_castps128_ps256(b_c2_128);
     __m256 b_c3 = _mm256_castps128_ps256(b_c3_128);
 
-    b_c0 = _mm256_insertf128_ps(b_c0, b_c0_128, 1);
-    b_c1 = _mm256_insertf128_ps(b_c1, b_c1_128, 1);
-    b_c2 = _mm256_insertf128_ps(b_c2, b_c2_128, 1);
-    b_c3 = _mm256_insertf128_ps(b_c3, b_c3_128, 1);
+    __m256i const dup128 = _mm256_setr_epi32(0, 1, 2, 3, 0, 1, 2, 3);
+    b_c0 = _mm256_permutevar8x32_ps(b_c0, dup128);
+    b_c1 = _mm256_permutevar8x32_ps(b_c1, dup128);
+    b_c2 = _mm256_permutevar8x32_ps(b_c2, dup128);
+    b_c3 = _mm256_permutevar8x32_ps(b_c3, dup128);
 
     __m256i const mask = _mm256_setr_epi32(0, 1, 4, 5, 2, 3, 6, 7);
 
