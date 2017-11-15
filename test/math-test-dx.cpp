@@ -18,9 +18,13 @@ DirectX::XMVECTOR XmFromAk(const ak::Vec2& v)
     return DirectX::XMVectorSet(v.x, v.y, 0.0f, 0.0f);
 }
 
-bool operator==(const DirectX::XMVECTOR& x, const ak::Vec2& k)
+inline bool operator==(const DirectX::XMVECTOR& x, const ak::Vec2& k)
 {
     return DirectX::XMVectorGetX(x) == k.x && DirectX::XMVectorGetY(x) == k.y;
+}
+inline bool operator==(const ak::Vec2& k, const DirectX::XMVECTOR& x)
+{
+    return x == k;
 }
 
 }  // namespace
@@ -132,5 +136,27 @@ TEST_CASE("vec2 arithmatic", "[vec2]")
     SECTION("distance")
     {
         REQUIRE(XMVectorGetX(XMVector2Length(a - b)) == ak::Distance(i, j));
+        REQUIRE(ak::Distance(j, k) == ak::Distance(k, j));
+    }
+    SECTION("normalize")
+    {
+        REQUIRE(XMVector2Normalize(a) == ak::Normalize(i));
+    }
+
+    SECTION("min max")
+    {
+        REQUIRE(XMVectorMin(a, b) == ak::Min(i, j));
+        REQUIRE(XMVectorMax(a, b) == ak::Max(i, j));
+    }
+
+    SECTION("lerp")
+    {
+        float const f = RandFloat(0.0f, 1.0f);
+        REQUIRE(XMVectorLerp(a, b, f) == ak::Lerp(i, j, f));
+    }
+
+    SECTION("negate")
+    {
+        REQUIRE(-a == -i);
     }
 }
