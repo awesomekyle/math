@@ -37,6 +37,18 @@ inline std::ostream& operator<<(std::ostream& os, glm::mat3 const& value)
     os << "{ " << value[2][0] << ", " << value[2][1] << ", " << value[2][2] << " }";
     return os;
 }
+inline std::ostream& operator<<(std::ostream& os, glm::mat4 const& value)
+{
+    os << "{ " << value[0][0] << ", " << value[0][1] << ", " << value[0][2] << ", " << value[0][3]
+       << " }\n";
+    os << "{ " << value[1][0] << ", " << value[1][1] << ", " << value[1][2] << ", " << value[1][3]
+       << " }\n";
+    os << "{ " << value[2][0] << ", " << value[2][1] << ", " << value[2][2] << ", " << value[2][3]
+       << " }\n";
+    os << "{ " << value[3][0] << ", " << value[3][1] << ", " << value[3][2] << ", " << value[3][3]
+       << " }";
+    return os;
+}
 inline std::ostream& operator<<(std::ostream& os, glm::vec3 const& value)
 {
     os << "{ " << value[0] << ", " << value[1] << ", " << value[2] << " }";

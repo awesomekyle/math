@@ -38,7 +38,7 @@ struct Mat3
     inline static Mat3 RotationAxis(Vec3 const axis, float const rad);
 };
 
-struct alignas(16) Mat4
+struct alignas(64) Mat4
 {
     Vec4 c0;
     Vec4 c1;
@@ -680,81 +680,53 @@ __forceinline Mat4 MultiplyAvx(Mat4 const& a, Mat4 const& b)
 
     return result;
 }
-__forceinline Mat4 MultiplyAvx512(Mat4 const& a, Mat4 const& b)
+__forceinline static Mat4 MultiplyAvx512(Mat4 const in_a, Mat4 const in_b)
 {
-    __m512i const transposeMask = _mm512_setr_epi32(0, 4, 8, 12,   //
-                                                    1, 5, 9, 13,   //
-                                                    2, 6, 10, 14,  //
-                                                    3, 7, 11, 15);
-    __m512 const a_r = _mm512_permutexvar_ps(transposeMask, _mm512_load_ps(&a.c0.x));
+    __m512 const av = _mm512_load_ps(&in_a.c0.x);
+    __m512 const bv = _mm512_load_ps(&in_b.c0.x);
 
-    __m128 const b_c0_128 = _mm_load_ps(&b.c0.x);
-    __m128 const b_c1_128 = _mm_load_ps(&b.c1.x);
-    __m128 const b_c2_128 = _mm_load_ps(&b.c2.x);
-    __m128 const b_c3_128 = _mm_load_ps(&b.c3.x);
+#define makeAMask(offset)                                                                     \
+    _mm512_setr_epi32(0 + (4 * offset), 1 + (4 * offset), 2 + (4 * offset), 3 + (4 * offset), \
+                      0 + (4 * offset), 1 + (4 * offset), 2 + (4 * offset), 3 + (4 * offset), \
+                      0 + (4 * offset), 1 + (4 * offset), 2 + (4 * offset), 3 + (4 * offset), \
+                      0 + (4 * offset), 1 + (4 * offset), 2 + (4 * offset), 3 + (4 * offset))
 
-    __m512 b_c0 = _mm512_castps128_ps512(b_c0_128);
-    __m512 b_c1 = _mm512_castps128_ps512(b_c1_128);
-    __m512 b_c2 = _mm512_castps128_ps512(b_c2_128);
-    __m512 b_c3 = _mm512_castps128_ps512(b_c3_128);
+#define makeBMask(offset)                                                                     \
+    _mm512_setr_epi32((0 * 4) + offset, (0 * 4) + offset, (0 * 4) + offset, (0 * 4) + offset, \
+                      (1 * 4) + offset, (1 * 4) + offset, (1 * 4) + offset, (1 * 4) + offset, \
+                      (2 * 4) + offset, (2 * 4) + offset, (2 * 4) + offset, (2 * 4) + offset, \
+                      (3 * 4) + offset, (3 * 4) + offset, (3 * 4) + offset, (3 * 4) + offset)
 
-    __m512i const dup128 = _mm512_setr_epi32(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3);
-    b_c0 = _mm512_permutexvar_ps(dup128, b_c0);
-    b_c1 = _mm512_permutexvar_ps(dup128, b_c1);
-    b_c2 = _mm512_permutexvar_ps(dup128, b_c2);
-    b_c3 = _mm512_permutexvar_ps(dup128, b_c3);
+    __m512i am = makeAMask(0);
+    __m512i bm = makeBMask(0);
+    __m512 a = _mm512_permutexvar_ps(am, av);
+    __m512 b = _mm512_permutexvar_ps(bm, bv);
+    __m512 aa = _mm512_mul_ps(a, b);
 
-    __m512i const shuff = _mm512_setr_epi32(0, 4, 8, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    Mat4 result;
+    __m512i cm = makeAMask(1);
+    __m512i dm = makeBMask(1);
+    __m512 c = _mm512_permutexvar_ps(cm, av);
+    __m512 d = _mm512_permutexvar_ps(dm, bv);
+    __m512 bb = _mm512_mul_ps(c, d);
 
-#pragma warning(disable : 4310)
-    // c0
-    __m512 xyzw = _mm512_mul_ps(a_r, b_c0);
-    __m512 xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
+    __m512i em = makeAMask(2);
+    __m512i fm = makeBMask(2);
+    __m512 e = _mm512_permutexvar_ps(em, av);
+    __m512 f = _mm512_permutexvar_ps(fm, bv);
+    __m512 cc = _mm512_mul_ps(e, f);
 
-    __m512 t0 = _mm512_add_ps(xyzw, xyzw_add);
-    __m512 t1 = _mm512_permute_ps(t0, _MM_SHUFFLE(0, 0, 2, 2));
+    __m512i gm = makeAMask(3);
+    __m512i hm = makeBMask(3);
+    __m512 g = _mm512_permutexvar_ps(gm, av);
+    __m512 h = _mm512_permutexvar_ps(hm, bv);
+    __m512 dd = _mm512_mul_ps(g, h);
+
+    __m512 t0 = _mm512_add_ps(aa, bb);
+    __m512 t1 = _mm512_add_ps(cc, dd);
     __m512 t2 = _mm512_add_ps(t0, t1);
-    __m512 t3 = _mm512_permutexvar_ps(shuff, t2);
 
-    __m128 r = _mm512_extractf32x4_ps(t3, 0);
-    _mm_store_ps(&result.c0.x, r);
-
-    // c1
-    xyzw = _mm512_mul_ps(a_r, b_c1);
-    xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
-
-    t0 = _mm512_add_ps(xyzw, xyzw_add);
-    t1 = _mm512_permute_ps(t0, _MM_SHUFFLE(0, 0, 2, 2));
-    t2 = _mm512_add_ps(t0, t1);
-    t3 = _mm512_permutexvar_ps(shuff, t2);
-
-    r = _mm512_extractf32x4_ps(t3, 0);
-    _mm_store_ps(&result.c1.x, r);
-
-    // c2
-    xyzw = _mm512_mul_ps(a_r, b_c2);
-    xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
-
-    t0 = _mm512_add_ps(xyzw, xyzw_add);
-    t1 = _mm512_permute_ps(t0, _MM_SHUFFLE(0, 0, 2, 2));
-    t2 = _mm512_add_ps(t0, t1);
-    t3 = _mm512_permutexvar_ps(shuff, t2);
-
-    r = _mm512_extractf32x4_ps(t3, 0);
-    _mm_store_ps(&result.c2.x, r);
-
-    // c3
-    xyzw = _mm512_mul_ps(a_r, b_c3);
-    xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
-
-    t0 = _mm512_add_ps(xyzw, xyzw_add);
-    t1 = _mm512_permute_ps(t0, _MM_SHUFFLE(0, 0, 2, 2));
-    t2 = _mm512_add_ps(t0, t1);
-    t3 = _mm512_permutexvar_ps(shuff, t2);
-
-    r = _mm512_extractf32x4_ps(t3, 0);
-    _mm_store_ps(&result.c3.x, r);
+    Mat4 result;
+    _mm512_store_ps(&result.c0.x, t2);
 
     return result;
 }

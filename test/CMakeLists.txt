@@ -28,4 +28,5 @@ target_include_directories(math-test
 target_link_libraries(math-test
     PRIVATE
         glm
+        eigen
 )
