@@ -825,51 +825,113 @@ inline Mat4 InverseAvx(Mat4 const mat)
     float const* const m = &mat.c0.x;
 
     // build 2x2 determinants
-    // build 2x2 determinants
-    float const s[] = {
+    float const dets[] = {
+        // s
         m[0] * m[5] - m[4] * m[1],  //
         m[0] * m[6] - m[4] * m[2],  //
         m[0] * m[7] - m[4] * m[3],  //
         m[1] * m[6] - m[5] * m[2],  //
         m[1] * m[7] - m[5] * m[3],  //
         m[2] * m[7] - m[6] * m[3],  //
-    };
 
-    float const c[] = {
-        m[10] * m[15] - m[14] * m[11],  //
-        m[9] * m[15] - m[13] * m[11],   //
-        m[9] * m[14] - m[13] * m[10],   //
-        m[8] * m[15] - m[12] * m[11],   //
-        m[8] * m[14] - m[12] * m[10],   //
+        // c
         m[8] * m[13] - m[12] * m[9],    //
+        m[8] * m[14] - m[12] * m[10],   //
+        m[8] * m[15] - m[12] * m[11],   //
+        m[9] * m[14] - m[13] * m[10],   //
+        m[9] * m[15] - m[13] * m[11],   //
+        m[10] * m[15] - m[14] * m[11],  //
     };
 
     // Should check for 0 determinant
-    float const invdet =
-        1.0f / (s[0] * c[5] - s[1] * c[4] + s[2] * c[3] + s[3] * c[2] - s[4] * c[1] + s[5] * c[0]);
+    float const det = (dets[0] * dets[11] - dets[1] * dets[10] + dets[2] * dets[9] +
+                       dets[3] * dets[8] - dets[4] * dets[7] + dets[5] * dets[6]);
+    float const invdet = 1.0f / det;
+
+    // clang-format off
+    #if 0
+    float* const r = &ret.c0.x;
+    r[0] = (+m[5]  * dets[11] - m[6]  * dets[10] + m[7]  * dets[9]) * invdet;
+    r[1] = (-m[1]  * dets[11] + m[2]  * dets[10] - m[3]  * dets[9]) * invdet;
+    r[2] = (+m[13] * dets[5] - m[14] * dets[4] + m[15] * dets[3]) * invdet;
+    r[3] = (-m[9]  * dets[5] + m[10] * dets[4] - m[11] * dets[3]) * invdet;
+    r[4] = (-m[4]  * dets[11] + m[6]  * dets[8] - m[7]  * dets[7]) * invdet;
+    r[5] = (+m[0]  * dets[11] - m[2]  * dets[8] + m[3]  * dets[7]) * invdet;
+    r[6] = (-m[12] * dets[5] + m[14] * dets[2] - m[15] * dets[1]) * invdet;
+    r[7] = (+m[8]  * dets[5] - m[10] * dets[2] + m[11] * dets[1]) * invdet;
+
+    r[8]  = (+m[4]  * dets[10] - m[5]  * dets[8] + m[7]  * dets[6]) * invdet;
+    r[9]  = (-m[0]  * dets[10] + m[1]  * dets[8] - m[3]  * dets[6]) * invdet;
+    r[10] = (+m[12] * dets[4] - m[13] * dets[2] + m[15] * dets[0]) * invdet;
+    r[11] = (-m[8]  * dets[4] + m[9]  * dets[2] - m[11] * dets[0]) * invdet;
+    r[12] = (-m[4]  * dets[9] + m[5]  * dets[7] - m[6]  * dets[6]) * invdet;
+    r[13] = (+m[0]  * dets[9] - m[1]  * dets[7] + m[2]  * dets[6]) * invdet;
+    r[14] = (-m[12] * dets[3] + m[13] * dets[1] - m[14] * dets[0]) * invdet;
+    r[15] = (+m[8]  * dets[3] - m[9]  * dets[1] + m[10] * dets[0]) * invdet;
+    #endif
+    // clang-format on
 
     Mat4 ret;
-    float* const r = &ret.c0.x;
 
-    r[0] = (m[5] * c[5] - m[6] * c[4] + m[7] * c[3]) * invdet;
-    r[1] = (-m[1] * c[5] + m[2] * c[4] - m[3] * c[3]) * invdet;
-    r[2] = (m[13] * s[5] - m[14] * s[4] + m[15] * s[3]) * invdet;
-    r[3] = (-m[9] * s[5] + m[10] * s[4] - m[11] * s[3]) * invdet;
+    __m256 const invdetAvx = _mm256_set1_ps(invdet);
+    __m256 const plusMinus = _mm256_setr_ps(0.0f, -0.0f, 0.0f, -0.0f, -0.0f, 0.0f, -0.0f, 0.0f);
+    __m256 const minusPlus = _mm256_setr_ps(-0.0f, 0.0f, -0.0f, 0.0f, 0.0f, -0.0f, 0.0f, -0.0f);
 
-    r[4] = (-m[4] * c[5] + m[6] * c[2] - m[7] * c[1]) * invdet;
-    r[5] = (m[0] * c[5] - m[2] * c[2] + m[3] * c[1]) * invdet;
-    r[6] = (-m[12] * s[5] + m[14] * s[2] - m[15] * s[1]) * invdet;
-    r[7] = (m[8] * s[5] - m[10] * s[2] + m[11] * s[1]) * invdet;
+    {
+        __m256i const aMask = _mm256_setr_epi32(5, 1, 13, 9, 4, 0, 12, 8);
+        __m256 a = _mm256_i32gather_ps(m, aMask, 4);
+        a = _mm256_xor_ps(plusMinus, a);
 
-    r[8] = (m[4] * c[4] - m[5] * c[2] + m[7] * c[0]) * invdet;
-    r[9] = (-m[0] * c[4] + m[1] * c[2] - m[3] * c[0]) * invdet;
-    r[10] = (m[12] * s[4] - m[13] * s[2] + m[15] * s[0]) * invdet;
-    r[11] = (-m[8] * s[4] + m[9] * s[2] - m[11] * s[0]) * invdet;
+        __m256i const bMask = _mm256_setr_epi32(6, 2, 14, 10, 6, 2, 14, 10);
+        __m256 b = _mm256_i32gather_ps(m, bMask, 4);
+        b = _mm256_xor_ps(minusPlus, b);
 
-    r[12] = (-m[4] * c[3] + m[5] * c[1] - m[6] * c[0]) * invdet;
-    r[13] = (m[0] * c[3] - m[1] * c[1] + m[2] * c[0]) * invdet;
-    r[14] = (-m[12] * s[3] + m[13] * s[1] - m[14] * s[0]) * invdet;
-    r[15] = (m[8] * s[3] - m[9] * s[1] + m[10] * s[0]) * invdet;
+        __m256i const cMask = _mm256_setr_epi32(7, 3, 15, 11, 7, 3, 15, 11);
+        __m256 c = _mm256_i32gather_ps(m, cMask, 4);
+        c = _mm256_xor_ps(plusMinus, c);
+
+        __m256i const daMask = _mm256_setr_epi32(11, 11, 5, 5, 11, 11, 5, 5);
+        __m256 da = _mm256_i32gather_ps(dets, daMask, 4);
+        __m256i const dbMask = _mm256_setr_epi32(10, 10, 4, 4, 8, 8, 2, 2);
+        __m256 db = _mm256_i32gather_ps(dets, dbMask, 4);
+        __m256i const dcMask = _mm256_setr_epi32(9, 9, 3, 3, 7, 7, 1, 1);
+        __m256 dc = _mm256_i32gather_ps(dets, dcMask, 4);
+
+        __m256 c0c1 = _mm256_mul_ps(a, da);
+        c0c1 = _mm256_add_ps(c0c1, _mm256_mul_ps(b, db));
+        c0c1 = _mm256_add_ps(c0c1, _mm256_mul_ps(c, dc));
+
+        c0c1 = _mm256_mul_ps(_mm256_set1_ps(invdet), c0c1);
+        _mm256_store_ps(&ret.c0.x, c0c1);
+    }
+
+    {
+        __m256i const aMask = _mm256_setr_epi32(4, 0, 12, 8, 4, 0, 12, 8);
+        __m256 a = _mm256_i32gather_ps(m, aMask, 4);
+        a = _mm256_xor_ps(plusMinus, a);
+
+        __m256i const bMask = _mm256_setr_epi32(5, 1, 13, 9, 5, 1, 13, 9);
+        __m256 b = _mm256_i32gather_ps(m, bMask, 4);
+        b = _mm256_xor_ps(minusPlus, b);
+
+        __m256i const cMask = _mm256_setr_epi32(7, 3, 15, 11, 6, 2, 14, 10);
+        __m256 c = _mm256_i32gather_ps(m, cMask, 4);
+        c = _mm256_xor_ps(plusMinus, c);
+
+        __m256i const daMask = _mm256_setr_epi32(10, 10, 4, 4, 9, 9, 3, 3);
+        __m256 da = _mm256_i32gather_ps(dets, daMask, 4);
+        __m256i const dbMask = _mm256_setr_epi32(8, 8, 2, 2, 7, 7, 1, 1);
+        __m256 db = _mm256_i32gather_ps(dets, dbMask, 4);
+        __m256i const dcMask = _mm256_setr_epi32(6, 6, 0, 0, 6, 6, 0, 0);
+        __m256 dc = _mm256_i32gather_ps(dets, dcMask, 4);
+
+        __m256 c2c3 = _mm256_mul_ps(a, da);
+        c2c3 = _mm256_add_ps(c2c3, _mm256_mul_ps(b, db));
+        c2c3 = _mm256_add_ps(c2c3, _mm256_mul_ps(c, dc));
+        c2c3 = _mm256_mul_ps(invdetAvx, c2c3);
+
+        _mm256_store_ps(&ret.c2.x, c2c3);
+    }
 
     return ret;
 }
@@ -879,7 +941,8 @@ inline Mat4 Inverse(Mat4 const m)
 #if 1
     return InverseScalar(m);
 #else
-    return InverseSse(m);
+    // TODO: AVX works in Debug, but not in Release
+    return InverseAvx(m);
 #endif
 }
 
