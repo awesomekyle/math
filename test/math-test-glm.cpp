@@ -1,8 +1,16 @@
 #include "akmath.h"
 #include <catch.hpp>
-#include <DirectXMath.h>
+#include <glm/glm.hpp>
 
-using namespace DirectX;
+namespace glm {
+
+template<typename T>
+inline T lerp(T const& a, T const& b, float const t)
+{
+    return a + (b - a) * t;
+}
+
+}  // namespace glm
 
 namespace {
 
@@ -14,55 +22,56 @@ float RandFloat(float const min, float const max)
 }
 
 // vec2
-DirectX::XMVECTOR XmFromAk(const ak::Vec2& v)
+glm::vec2 GlmFromAk(const ak::Vec2& v)
 {
-    return DirectX::XMVectorSet(v.x, v.y, 0.0f, 0.0f);
+    return {
+        v.x,
+        v.y,
+    };
 }
 
-inline bool operator==(const DirectX::XMVECTOR& x, const ak::Vec2& k)
+inline bool operator==(const glm::vec2& g, const ak::Vec2& k)
 {
-    return DirectX::XMVectorGetX(x) == k.x && DirectX::XMVectorGetY(x) == k.y;
+    return g.x == Approx(k.x) && g.y == Approx(k.y);
 }
-inline bool operator==(const ak::Vec2& k, const DirectX::XMVECTOR& x)
+inline bool operator==(const ak::Vec2& k, const glm::vec2& g)
 {
-    return x == k;
+    return g == k;
 }
 
 // vec3
-DirectX::XMVECTOR XmFromAk(const ak::Vec3& v)
+glm::vec3 GlmFromAk(const ak::Vec3& v)
 {
-    return DirectX::XMVectorSet(v.x, v.y, v.z, 0.0f);
+    return {v.x, v.y, v.z};
 }
 
-inline bool operator==(const DirectX::XMVECTOR& x, const ak::Vec3& k)
+inline bool operator==(const glm::vec3& g, const ak::Vec3& k)
 {
-    return DirectX::XMVectorGetX(x) == k.x && DirectX::XMVectorGetY(x) == k.y &&
-           DirectX::XMVectorGetZ(x) == k.z;
+    return g.x == Approx(k.x) && g.y == Approx(k.y) && g.z == Approx(k.z);
 }
-inline bool operator==(const ak::Vec3& k, const DirectX::XMVECTOR& x)
+inline bool operator==(const ak::Vec3& k, const glm::vec3& g)
 {
-    return x == k;
+    return g == k;
 }
 
 // vec4
-DirectX::XMVECTOR XmFromAk(const ak::Vec4& v)
+glm::vec4 GlmFromAk(const ak::Vec4& v)
 {
-    return DirectX::XMVectorSet(v.x, v.y, v.z, v.w);
+    return {v.x, v.y, v.z, v.w};
 }
 
-inline bool operator==(const DirectX::XMVECTOR& x, const ak::Vec4& k)
+inline bool operator==(const glm::vec4& g, const ak::Vec4& k)
 {
-    return DirectX::XMVectorGetX(x) == Approx(k.x) && DirectX::XMVectorGetY(x) == Approx(k.y) &&
-           DirectX::XMVectorGetZ(x) == Approx(k.z) && DirectX::XMVectorGetW(x) == Approx(k.w);
+    return g.x == Approx(k.x) && g.y == Approx(k.y) && g.z == Approx(k.z) && g.w == Approx(k.w);
 }
-inline bool operator==(const ak::Vec4& k, const DirectX::XMVECTOR& x)
+inline bool operator==(const ak::Vec4& k, const glm::vec4& g)
 {
-    return x == k;
+    return g == k;
 }
 
 }  // namespace
 
-TEST_CASE("DirectXMath - vec2 arithmatic", "[vec2]")
+TEST_CASE("GLM - vec2 arithmatic", "[vec2]")
 {
     ak::Vec2 const i = {
         RandFloat(-50.0f, 50.0f),
@@ -77,9 +86,9 @@ TEST_CASE("DirectXMath - vec2 arithmatic", "[vec2]")
         RandFloat(-50.0f, 50.0f),
     };
 
-    DirectX::XMVECTOR const a = XmFromAk(i);
-    DirectX::XMVECTOR const b = XmFromAk(j);
-    DirectX::XMVECTOR const c = XmFromAk(k);
+    auto const a = GlmFromAk(i);
+    auto const b = GlmFromAk(j);
+    auto const c = GlmFromAk(k);
     float const scalar = RandFloat(-50.0f, 50.0f);
 
     REQUIRE(a == i);
@@ -126,29 +135,29 @@ TEST_CASE("DirectXMath - vec2 arithmatic", "[vec2]")
 
     SECTION("length")
     {
-        REQUIRE(XMVectorGetX(XMVector2Length(a)) == ak::Length(i));
-        REQUIRE(XMVectorGetX(XMVector2LengthSq(b)) == ak::LengthSq(j));
+        REQUIRE(glm::length(a) == ak::Length(i));
+        REQUIRE(glm::length(b) * glm::length(b) == Approx(ak::LengthSq(j)));
     }
     SECTION("distance")
     {
-        REQUIRE(XMVectorGetX(XMVector2Length(a - b)) == ak::Distance(i, j));
+        REQUIRE(glm::distance(a, b) == ak::Distance(i, j));
         REQUIRE(ak::Distance(j, k) == ak::Distance(k, j));
     }
     SECTION("normalize")
     {
-        REQUIRE(XMVector2Normalize(a) == ak::Normalize(i));
+        REQUIRE(glm::normalize(a) == ak::Normalize(i));
     }
 
     SECTION("min max")
     {
-        REQUIRE(XMVectorMin(a, b) == ak::Min(i, j));
-        REQUIRE(XMVectorMax(a, b) == ak::Max(i, j));
+        REQUIRE(glm::min(a, b) == ak::Min(i, j));
+        REQUIRE(glm::max(a, b) == ak::Max(i, j));
     }
 
     SECTION("lerp")
     {
         float const f = RandFloat(0.0f, 1.0f);
-        REQUIRE(XMVectorLerp(a, b, f) == ak::Lerp(i, j, f));
+        REQUIRE(glm::lerp(a, b, f) == ak::Lerp(i, j, f));
     }
 
     SECTION("negate")
@@ -157,7 +166,7 @@ TEST_CASE("DirectXMath - vec2 arithmatic", "[vec2]")
     }
 }
 
-TEST_CASE("DirectXMath - vec3 arithmatic", "[vec3]")
+TEST_CASE("GLM - vec3 arithmatic", "[vec3]")
 {
     ak::Vec3 const i = {
         RandFloat(-50.0f, 50.0f),
@@ -175,9 +184,9 @@ TEST_CASE("DirectXMath - vec3 arithmatic", "[vec3]")
         RandFloat(-50.0f, 50.0f),
     };
 
-    DirectX::XMVECTOR const a = XmFromAk(i);
-    DirectX::XMVECTOR const b = XmFromAk(j);
-    DirectX::XMVECTOR const c = XmFromAk(k);
+    auto const a = GlmFromAk(i);
+    auto const b = GlmFromAk(j);
+    auto const c = GlmFromAk(k);
     float const scalar = RandFloat(-50.0f, 50.0f);
 
     REQUIRE(a == i);
@@ -224,29 +233,29 @@ TEST_CASE("DirectXMath - vec3 arithmatic", "[vec3]")
 
     SECTION("length")
     {
-        REQUIRE(XMVectorGetX(XMVector3Length(a)) == ak::Length(i));
-        REQUIRE(XMVectorGetX(XMVector3LengthSq(b)) == ak::LengthSq(j));
+        REQUIRE(glm::length(a) == ak::Length(i));
+        REQUIRE(glm::length(b) * glm::length(b) == Approx(ak::LengthSq(j)));
     }
     SECTION("distance")
     {
-        REQUIRE(XMVectorGetX(XMVector3Length(a - b)) == ak::Distance(i, j));
+        REQUIRE(glm::distance(a, b) == ak::Distance(i, j));
         REQUIRE(ak::Distance(j, k) == ak::Distance(k, j));
     }
     SECTION("normalize")
     {
-        REQUIRE(XMVector3Normalize(a) == ak::Normalize(i));
+        REQUIRE(glm::normalize(a) == ak::Normalize(i));
     }
 
     SECTION("min max")
     {
-        REQUIRE(XMVectorMin(a, b) == ak::Min(i, j));
-        REQUIRE(XMVectorMax(a, b) == ak::Max(i, j));
+        REQUIRE(glm::min(a, b) == ak::Min(i, j));
+        REQUIRE(glm::max(a, b) == ak::Max(i, j));
     }
 
     SECTION("lerp")
     {
         float const f = RandFloat(0.0f, 1.0f);
-        REQUIRE(XMVectorLerp(a, b, f) == ak::Lerp(i, j, f));
+        REQUIRE(glm::lerp(a, b, f) == ak::Lerp(i, j, f));
     }
 
     SECTION("negate")
@@ -256,16 +265,16 @@ TEST_CASE("DirectXMath - vec3 arithmatic", "[vec3]")
 
     SECTION("dot")
     {
-        REQUIRE(XMVectorGetX(XMVector3Dot(a, b)) == ak::Dot(i, j));
+        REQUIRE(glm::dot(a, b) == ak::Dot(i, j));
     }
 
     SECTION("cross")
     {
-        REQUIRE(XMVector3Cross(a, b) == ak::Cross(i, j));
+        REQUIRE(glm::cross(a, b) == ak::Cross(i, j));
     }
 }
 
-TEST_CASE("DirectXMath - vec4 arithmatic", "[vec4]")
+TEST_CASE("GLM - vec4 arithmatic", "[vec4]")
 {
     ak::Vec4 const i = {
         RandFloat(-50.0f, 50.0f),
@@ -286,9 +295,9 @@ TEST_CASE("DirectXMath - vec4 arithmatic", "[vec4]")
         RandFloat(-50.0f, 50.0f),
     };
 
-    DirectX::XMVECTOR const a = XmFromAk(i);
-    DirectX::XMVECTOR const b = XmFromAk(j);
-    DirectX::XMVECTOR const c = XmFromAk(k);
+    auto const a = GlmFromAk(i);
+    auto const b = GlmFromAk(j);
+    auto const c = GlmFromAk(k);
     float const scalar = RandFloat(-50.0f, 50.0f);
 
     REQUIRE(a == i);
@@ -335,29 +344,29 @@ TEST_CASE("DirectXMath - vec4 arithmatic", "[vec4]")
 
     SECTION("length")
     {
-        REQUIRE(XMVectorGetX(XMVector4Length(a)) == ak::Length(i));
-        REQUIRE(XMVectorGetX(XMVector4LengthSq(b)) == Approx(ak::LengthSq(j)));
+        REQUIRE(glm::length(a) == ak::Length(i));
+        REQUIRE(glm::length(b) * glm::length(b) == Approx(ak::LengthSq(j)));
     }
     SECTION("distance")
     {
-        REQUIRE(XMVectorGetX(XMVector4Length(a - b)) == ak::Distance(i, j));
+        REQUIRE(glm::distance(a, b) == ak::Distance(i, j));
         REQUIRE(ak::Distance(j, k) == ak::Distance(k, j));
     }
     SECTION("normalize")
     {
-        REQUIRE(XMVector4Normalize(a) == ak::Normalize(i));
+        REQUIRE(glm::normalize(a) == ak::Normalize(i));
     }
 
     SECTION("min max")
     {
-        REQUIRE(XMVectorMin(a, b) == ak::Min(i, j));
-        REQUIRE(XMVectorMax(a, b) == ak::Max(i, j));
+        REQUIRE(glm::min(a, b) == ak::Min(i, j));
+        REQUIRE(glm::max(a, b) == ak::Max(i, j));
     }
 
     SECTION("lerp")
     {
         float const f = RandFloat(0.0f, 1.0f);
-        REQUIRE(XMVectorLerp(a, b, f) == ak::Lerp(i, j, f));
+        REQUIRE(glm::lerp(a, b, f) == ak::Lerp(i, j, f));
     }
 
     SECTION("negate")

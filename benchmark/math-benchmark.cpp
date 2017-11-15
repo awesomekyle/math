@@ -6,6 +6,7 @@
 namespace {
 
 using namespace DirectX;
+using namespace ak;
 
 enum {
     kLoopCount = 128,
@@ -67,6 +68,7 @@ void FillVec(ak::Vec4& v)
          RandFloat(-50.0f, 50.0f)};
 }
 
+//-----------------------------------------------------------------------------
 template<class Vector>
 void VecAddition(benchmark::State& state)
 {
