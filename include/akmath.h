@@ -769,48 +769,48 @@ constexpr inline Mat4 operator*(Mat4 const m, float const f)
 }
 inline Mat4 InverseScalar(Mat4 const mat)
 {
-    float const(*const a)[4] = (float(*)[4]) & mat.c0.x;
+    float const* const a = &mat.c0.x;
 
     // build 2x2 determinants
-    float s0 = a[0][0] * a[1][1] - a[1][0] * a[0][1];
-    float s1 = a[0][0] * a[1][2] - a[1][0] * a[0][2];
-    float s2 = a[0][0] * a[1][3] - a[1][0] * a[0][3];
-    float s3 = a[0][1] * a[1][2] - a[1][1] * a[0][2];
-    float s4 = a[0][1] * a[1][3] - a[1][1] * a[0][3];
-    float s5 = a[0][2] * a[1][3] - a[1][2] * a[0][3];
+    float s0 = a[0] * a[5] - a[4] * a[1];
+    float s1 = a[0] * a[6] - a[4] * a[2];
+    float s2 = a[0] * a[7] - a[4] * a[3];
+    float s3 = a[1] * a[6] - a[5] * a[2];
+    float s4 = a[1] * a[7] - a[5] * a[3];
+    float s5 = a[2] * a[7] - a[6] * a[3];
 
-    float c5 = a[2][2] * a[3][3] - a[3][2] * a[2][3];
-    float c4 = a[2][1] * a[3][3] - a[3][1] * a[2][3];
-    float c3 = a[2][1] * a[3][2] - a[3][1] * a[2][2];
-    float c2 = a[2][0] * a[3][3] - a[3][0] * a[2][3];
-    float c1 = a[2][0] * a[3][2] - a[3][0] * a[2][2];
-    float c0 = a[2][0] * a[3][1] - a[3][0] * a[2][1];
+    float c5 = a[10] * a[15] - a[14] * a[11];
+    float c4 = a[9] * a[15] - a[13] * a[11];
+    float c3 = a[9] * a[14] - a[13] * a[10];
+    float c2 = a[8] * a[15] - a[12] * a[11];
+    float c1 = a[8] * a[14] - a[12] * a[10];
+    float c0 = a[8] * a[13] - a[12] * a[9];
 
     // Should check for 0 determinant
     float invdet = 1.0f / (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
 
     Mat4 ret;
-    float(*b)[4] = (float(*)[4]) & ret.c0.x;
+    float* const b = &ret.c0.x;
 
-    b[0][0] = (a[1][1] * c5 - a[1][2] * c4 + a[1][3] * c3) * invdet;
-    b[0][1] = (-a[0][1] * c5 + a[0][2] * c4 - a[0][3] * c3) * invdet;
-    b[0][2] = (a[3][1] * s5 - a[3][2] * s4 + a[3][3] * s3) * invdet;
-    b[0][3] = (-a[2][1] * s5 + a[2][2] * s4 - a[2][3] * s3) * invdet;
+    b[0] = (a[5] * c5 - a[6] * c4 + a[7] * c3) * invdet;
+    b[1] = (-a[1] * c5 + a[2] * c4 - a[3] * c3) * invdet;
+    b[2] = (a[13] * s5 - a[14] * s4 + a[15] * s3) * invdet;
+    b[3] = (-a[9] * s5 + a[10] * s4 - a[11] * s3) * invdet;
 
-    b[1][0] = (-a[1][0] * c5 + a[1][2] * c2 - a[1][3] * c1) * invdet;
-    b[1][1] = (a[0][0] * c5 - a[0][2] * c2 + a[0][3] * c1) * invdet;
-    b[1][2] = (-a[3][0] * s5 + a[3][2] * s2 - a[3][3] * s1) * invdet;
-    b[1][3] = (a[2][0] * s5 - a[2][2] * s2 + a[2][3] * s1) * invdet;
+    b[4] = (-a[4] * c5 + a[6] * c2 - a[7] * c1) * invdet;
+    b[5] = (a[0] * c5 - a[2] * c2 + a[3] * c1) * invdet;
+    b[6] = (-a[12] * s5 + a[14] * s2 - a[15] * s1) * invdet;
+    b[7] = (a[8] * s5 - a[10] * s2 + a[11] * s1) * invdet;
 
-    b[2][0] = (a[1][0] * c4 - a[1][1] * c2 + a[1][3] * c0) * invdet;
-    b[2][1] = (-a[0][0] * c4 + a[0][1] * c2 - a[0][3] * c0) * invdet;
-    b[2][2] = (a[3][0] * s4 - a[3][1] * s2 + a[3][3] * s0) * invdet;
-    b[2][3] = (-a[2][0] * s4 + a[2][1] * s2 - a[2][3] * s0) * invdet;
+    b[8] = (a[4] * c4 - a[5] * c2 + a[7] * c0) * invdet;
+    b[9] = (-a[0] * c4 + a[1] * c2 - a[3] * c0) * invdet;
+    b[10] = (a[12] * s4 - a[13] * s2 + a[15] * s0) * invdet;
+    b[11] = (-a[8] * s4 + a[9] * s2 - a[11] * s0) * invdet;
 
-    b[3][0] = (-a[1][0] * c3 + a[1][1] * c1 - a[1][2] * c0) * invdet;
-    b[3][1] = (a[0][0] * c3 - a[0][1] * c1 + a[0][2] * c0) * invdet;
-    b[3][2] = (-a[3][0] * s3 + a[3][1] * s1 - a[3][2] * s0) * invdet;
-    b[3][3] = (a[2][0] * s3 - a[2][1] * s1 + a[2][2] * s0) * invdet;
+    b[12] = (-a[4] * c3 + a[5] * c1 - a[6] * c0) * invdet;
+    b[13] = (a[0] * c3 - a[1] * c1 + a[2] * c0) * invdet;
+    b[14] = (-a[12] * s3 + a[13] * s1 - a[14] * s0) * invdet;
+    b[15] = (a[8] * s3 - a[9] * s1 + a[10] * s0) * invdet;
 
     return ret;
 }
