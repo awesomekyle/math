@@ -94,6 +94,26 @@ inline bool operator==(const glm::mat3 g, const ak::Mat3& k)
     return true;
 }
 
+// mat4
+glm::mat4 GlmFromAk(const ak::Mat4& m)
+{
+    return glm::mat4{m.c0.x, m.c0.y, m.c0.z, m.c0.w,  //
+                     m.c1.x, m.c1.y, m.c1.z, m.c1.w,  //
+                     m.c2.x, m.c2.y, m.c2.z, m.c2.w,  //
+                     m.c3.x, m.c3.y, m.c3.z, m.c3.w};
+}
+inline bool operator==(const glm::mat4 g, const ak::Mat4& k)
+{
+    float const* const pX = &g[0][0];
+    float const* const pK = &k.c0.x;
+    for (int ii = 0; ii < sizeof(k) / sizeof(k.c0.x); ++ii) {
+        if (pX[ii] != Approx(pK[ii])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 }  // namespace
 
 TEST_CASE("GLM - vec2 arithmatic", "[vec2]")
@@ -481,6 +501,109 @@ TEST_CASE("GLM - mat3 arithmatic", "[mat3]")
 
         glm::vec3 const u{x, y, z};
         ak::Vec3 const v{x, y, z};
+        REQUIRE(u == v);
+
+        CHECK(a * u == i * v);
+    }
+}
+
+TEST_CASE("GLM - mat4 arithmatic", "[mat4]")
+{
+    ak::Mat4 const i = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+    ak::Mat4 const j = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+    ak::Mat4 const k = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+
+    glm::mat4 const a = GlmFromAk(i);
+    glm::mat4 const b = GlmFromAk(j);
+    glm::mat4 const c = GlmFromAk(k);
+    float const scalar = RandFloat(-50.0f, 50.0f);
+
+    REQUIRE(a == i);
+    REQUIRE(b == j);
+    REQUIRE(c == k);
+
+    SECTION("identity")
+    {
+        CHECK(glm::mat4() == ak::Mat4::Identity());
+    }
+
+    SECTION("scale")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+        CHECK(glm::scale(glm::mat4(), {x, y, z}) == ak::Mat4::Scaling(x, y, z));
+    }
+
+    SECTION("rotation")
+    {
+        float const r = RandFloat(-50.0f, 50.0f);
+        CHECK(glm::rotate(glm::mat4(), r, {1, 0, 0}) == ak::Mat4::RotationX(r));
+        CHECK(glm::rotate(glm::mat4(), r, {0, 1, 0}) == ak::Mat4::RotationY(r));
+        CHECK(glm::rotate(glm::mat4(), r, {0, 0, 1}) == ak::Mat4::RotationZ(r));
+    }
+    SECTION("axis rotation")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+        auto const glmRotation = (glm::mat4)glm::rotate(glm::mat4(), scalar, {x, y, z});
+        CHECK(glmRotation == ak::Mat4::RotationAxis({x, y, z}, scalar));
+    }
+    SECTION("multiplication")
+    {
+        auto const m1 = a * b;
+        auto const m2 = i * j;
+        CHECK(m1 == m2);
+    }
+    SECTION("transpose")
+    {
+        REQUIRE(glm::transpose(a) == ak::Transpose(i));
+    }
+    SECTION("determinant")
+    {
+        REQUIRE(glm::determinant(a) == Approx(ak::Determinant(i)));
+    }
+    SECTION("inverse")
+    {
+        REQUIRE(glm::inverse(a) == ak::Inverse(i));
+    }
+    SECTION("vector multiplication")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+        float const w = RandFloat(-50.0f, 50.0f);
+
+        glm::vec4 const u{x, y, z, w};
+        ak::Vec4 const v{x, y, z, w};
         REQUIRE(u == v);
 
         CHECK(a * u == i * v);
