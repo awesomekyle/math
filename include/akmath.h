@@ -565,10 +565,10 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
 
     _MM_TRANSPOSE4_PS(a_r0, a_r1, a_r2, a_r3);
 
-    __m128 b_c0 = _mm_load_ps(&b.c0.x);
-    __m128 b_c1 = _mm_load_ps(&b.c1.x);
-    __m128 b_c2 = _mm_load_ps(&b.c2.x);
-    __m128 b_c3 = _mm_load_ps(&b.c3.x);
+    __m128 const b_c0 = _mm_load_ps(&b.c0.x);
+    __m128 const b_c1 = _mm_load_ps(&b.c1.x);
+    __m128 const b_c2 = _mm_load_ps(&b.c2.x);
+    __m128 const b_c3 = _mm_load_ps(&b.c3.x);
 
     // c0
     __m128 x = _mm_mul_ps(a_r0, b_c0);
@@ -620,8 +620,6 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
 
     return result;
 #elif 1
-    Mat4 result;
-
     __m128 a_r0 = _mm_load_ps(&a.c0.x);
     __m128 a_r1 = _mm_load_ps(&a.c1.x);
     __m128 a_r2 = _mm_load_ps(&a.c2.x);
@@ -629,11 +627,8 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
 
     _MM_TRANSPOSE4_PS(a_r0, a_r1, a_r2, a_r3);
 
-    __m256 a_r0r1 = _mm256_castps128_ps256(a_r0);
-    a_r0r1 = _mm256_insertf128_ps(a_r0r1, a_r1, 1);
-
-    __m256 a_r2r3 = _mm256_castps128_ps256(a_r2);
-    a_r2r3 = _mm256_insertf128_ps(a_r2r3, a_r3, 1);
+    __m256 const a_r0r1 = _mm256_setr_m128(a_r0, a_r1);
+    __m256 const a_r2r3 = _mm256_setr_m128(a_r2, a_r3);
 
     __m128 const b_c0_128 = _mm_load_ps(&b.c0.x);
     __m128 const b_c1_128 = _mm_load_ps(&b.c1.x);
@@ -647,53 +642,45 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
 
     __m256i const mask = _mm256_setr_epi32(0, 1, 4, 5, 2, 3, 6, 7);
 
-    // c0
-    __m256 xy = _mm256_mul_ps(a_r0r1, b_c0);
-    __m256 zw = _mm256_mul_ps(a_r2r3, b_c0);
+    Mat4 result;
 
-    __m256 t0 = _mm256_hadd_ps(xy, zw);
+    // c0 & c1
+    __m256 xy0 = _mm256_mul_ps(a_r0r1, b_c0);
+    __m256 zw0 = _mm256_mul_ps(a_r2r3, b_c0);
 
-    t0 = _mm256_permutevar8x32_ps(t0, mask);
-    __m256 t1 = _mm256_hadd_ps(t0, t0);
-    t1 = _mm256_permutevar8x32_ps(t1, mask);
+    __m256 xy1 = _mm256_mul_ps(a_r0r1, b_c1);
+    __m256 zw1 = _mm256_mul_ps(a_r2r3, b_c1);
 
-    _mm_store_ps(&result.c0.x, _mm256_extractf128_ps(t1, 0));
-
-    // c1
-    xy = _mm256_mul_ps(a_r0r1, b_c1);
-    zw = _mm256_mul_ps(a_r2r3, b_c1);
-
-    t0 = _mm256_hadd_ps(xy, zw);
+    __m256 t0 = _mm256_hadd_ps(xy0, zw0);
     t0 = _mm256_permutevar8x32_ps(t0, mask);
 
-    t1 = _mm256_hadd_ps(t0, t0);
+    __m256 t1 = _mm256_hadd_ps(xy1, zw1);
     t1 = _mm256_permutevar8x32_ps(t1, mask);
 
-    _mm_store_ps(&result.c1.x, _mm256_extractf128_ps(t1, 0));
+    __m256 t2 = _mm256_hadd_ps(t0, t1);
+    t2 = _mm256_permutevar8x32_ps(t2, mask);
 
-    // c2
-    xy = _mm256_mul_ps(a_r0r1, b_c2);
-    zw = _mm256_mul_ps(a_r2r3, b_c2);
+    _mm_store_ps(&result.c0.x, _mm256_extractf128_ps(t2, 0));
+    _mm_store_ps(&result.c1.x, _mm256_extractf128_ps(t2, 1));
 
-    t0 = _mm256_hadd_ps(xy, zw);
+    // c2 & t3
+    xy0 = _mm256_mul_ps(a_r0r1, b_c2);
+    zw0 = _mm256_mul_ps(a_r2r3, b_c2);
+
+    xy1 = _mm256_mul_ps(a_r0r1, b_c3);
+    zw1 = _mm256_mul_ps(a_r2r3, b_c3);
+
+    t0 = _mm256_hadd_ps(xy0, zw0);
     t0 = _mm256_permutevar8x32_ps(t0, mask);
 
-    t1 = _mm256_hadd_ps(t0, t0);
+    t1 = _mm256_hadd_ps(xy1, zw1);
     t1 = _mm256_permutevar8x32_ps(t1, mask);
 
-    _mm_store_ps(&result.c2.x, _mm256_extractf128_ps(t1, 0));
+    t2 = _mm256_hadd_ps(t0, t1);
+    t2 = _mm256_permutevar8x32_ps(t2, mask);
 
-    // c3
-    xy = _mm256_mul_ps(a_r0r1, b_c3);
-    zw = _mm256_mul_ps(a_r2r3, b_c3);
-
-    t0 = _mm256_hadd_ps(xy, zw);
-    t0 = _mm256_permutevar8x32_ps(t0, mask);
-
-    t1 = _mm256_hadd_ps(t0, t0);
-    t1 = _mm256_permutevar8x32_ps(t1, mask);
-
-    _mm_store_ps(&result.c3.x, _mm256_extractf128_ps(t1, 0));
+    _mm_store_ps(&result.c2.x, _mm256_extractf128_ps(t2, 0));
+    _mm_store_ps(&result.c3.x, _mm256_extractf128_ps(t2, 1));
 
     return result;
 #elif 1
@@ -754,7 +741,7 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
     _mm_store_ps(&result.c0.x, r);
 
     // c1
-     xyzw = _mm512_mul_ps(a_r, b_c1);
+    xyzw = _mm512_mul_ps(a_r, b_c1);
     xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
 
     t0 = _mm512_add_ps(xyzw, xyzw_add);
