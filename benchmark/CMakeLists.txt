@@ -14,3 +14,5 @@ target_include_directories(math-benchmark
     PRIVATE
         ${PROJECT_SOURCE_DIR}/include
 )
+
+add_dependencies(math-benchmark math-test)

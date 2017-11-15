@@ -1,6 +1,7 @@
 #pragma once
 #include <math.h>
 #include <immintrin.h>
+#include <cstdalign>
 
 namespace ak {
 
@@ -15,7 +16,7 @@ struct Vec3
     float y;
     float z;
 };
-struct Vec4
+struct alignas(16) Vec4
 {
     float x;
     float y;
@@ -29,23 +30,23 @@ struct Mat3
     Vec3 c1;
     Vec3 c2;
 
-    inline static Mat3 Identity();
-    inline static Mat3 Scaling(float const x, float const y, float const z);
+    constexpr inline static Mat3 Identity();
+    constexpr inline static Mat3 Scaling(float const x, float const y, float const z);
     inline static Mat3 RotationX(float const rad);
     inline static Mat3 RotationY(float const rad);
     inline static Mat3 RotationZ(float const rad);
     inline static Mat3 RotationAxis(Vec3 const axis, float const rad);
 };
 
-struct Mat4
+struct alignas(16) Mat4
 {
     Vec4 c0;
     Vec4 c1;
     Vec4 c2;
     Vec4 c3;
 
-    inline static Mat4 Identity();
-    inline static Mat4 Scaling(float const x, float const y, float const z);
+    constexpr inline static Mat4 Identity();
+    constexpr inline static Mat4 Scaling(float const x, float const y, float const z);
     inline static Mat4 RotationX(float const rad);
     inline static Mat4 RotationY(float const rad);
     inline static Mat4 RotationZ(float const rad);
@@ -89,7 +90,7 @@ constexpr inline Vec2 operator/(Vec2 const a, float const f)
 }
 
 // Vec2 misc
-inline float LengthSq(Vec2 const a)
+constexpr inline float LengthSq(Vec2 const a)
 {
     return a.x * a.x + a.y * a.y;
 }
@@ -97,7 +98,7 @@ inline float Length(Vec2 const a)
 {
     return sqrtf(LengthSq(a));
 }
-inline float DistanceSq(Vec2 const a, Vec2 const b)
+constexpr inline float DistanceSq(Vec2 const a, Vec2 const b)
 {
     return LengthSq(a - b);
 }
@@ -110,21 +111,21 @@ inline Vec2 Normalize(Vec2 const v)
     float const length = Length(v);
     return v / length;
 }
-inline Vec2 Min(Vec2 const a, Vec2 const b)
+constexpr inline Vec2 Min(Vec2 const a, Vec2 const b)
 {
     return {a.x < b.x ? a.x : b.x, a.y < b.y ? a.y : b.y};
 }
-inline Vec2 Max(Vec2 const a, Vec2 const b)
+constexpr inline Vec2 Max(Vec2 const a, Vec2 const b)
 {
     return {a.x > b.x ? a.x : b.x, a.y > b.y ? a.y : b.y};
 }
-inline Vec2 Lerp(Vec2 const a, Vec2 const b, float const t)
+constexpr inline Vec2 Lerp(Vec2 const a, Vec2 const b, float const t)
 {
     auto const d = b - a;
     return a + (d * t);
 }
 
-inline Vec2 operator-(Vec2 const v)
+constexpr inline Vec2 operator-(Vec2 const v)
 {
     return {-v.x, -v.y};
 }
@@ -159,7 +160,7 @@ constexpr inline Vec3 operator/(Vec3 const a, float const f)
 }
 
 // Vec3 misc
-inline float LengthSq(Vec3 const a)
+constexpr inline float LengthSq(Vec3 const a)
 {
     return a.x * a.x + a.y * a.y + a.z * a.z;
 }
@@ -167,7 +168,7 @@ inline float Length(Vec3 const a)
 {
     return sqrtf(LengthSq(a));
 }
-inline float DistanceSq(Vec3 const a, Vec3 const b)
+constexpr inline float DistanceSq(Vec3 const a, Vec3 const b)
 {
     return LengthSq(a - b);
 }
@@ -180,30 +181,30 @@ inline Vec3 Normalize(Vec3 const v)
     float const length = Length(v);
     return v / length;
 }
-inline Vec3 Min(Vec3 const a, Vec3 const b)
+constexpr inline Vec3 Min(Vec3 const a, Vec3 const b)
 {
     return {a.x < b.x ? a.x : b.x, a.y < b.y ? a.y : b.y, a.z < b.z ? a.z : b.z};
 }
-inline Vec3 Max(Vec3 const a, Vec3 const b)
+constexpr inline Vec3 Max(Vec3 const a, Vec3 const b)
 {
     return {a.x > b.x ? a.x : b.x, a.y > b.y ? a.y : b.y, a.z > b.z ? a.z : b.z};
 }
-inline Vec3 Lerp(Vec3 const a, Vec3 const b, float const t)
+constexpr inline Vec3 Lerp(Vec3 const a, Vec3 const b, float const t)
 {
     auto const d = b - a;
     return a + (d * t);
 }
 
-inline Vec3 operator-(Vec3 const v)
+constexpr inline Vec3 operator-(Vec3 const v)
 {
     return {-v.x, -v.y, -v.z};
 }
 
-inline float Dot(Vec3 const a, Vec3 const b)
+constexpr inline float Dot(Vec3 const a, Vec3 const b)
 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
-inline Vec3 Cross(Vec3 const a, Vec3 const b)
+constexpr inline Vec3 Cross(Vec3 const a, Vec3 const b)
 {
     return {
         a.y * b.z - a.z * b.y,
@@ -211,7 +212,7 @@ inline Vec3 Cross(Vec3 const a, Vec3 const b)
         a.x * b.y - a.y * b.x,
     };
 }
-inline float Hadd(Vec3 const v)
+constexpr inline float Hadd(Vec3 const v)
 {
     return v.x + v.y + v.z;
 }
@@ -246,7 +247,7 @@ constexpr inline Vec4 operator/(Vec4 const a, float const f)
 }
 
 // Vec4 misc
-inline float LengthSq(Vec4 const a)
+constexpr inline float LengthSq(Vec4 const a)
 {
     return a.x * a.x + a.y * a.y + a.z * a.z + a.w * a.w;
 }
@@ -254,7 +255,7 @@ inline float Length(Vec4 const a)
 {
     return sqrtf(LengthSq(a));
 }
-inline float DistanceSq(Vec4 const a, Vec4 const b)
+constexpr inline float DistanceSq(Vec4 const a, Vec4 const b)
 {
     return LengthSq(a - b);
 }
@@ -267,28 +268,28 @@ inline Vec4 Normalize(Vec4 const v)
     float const length = Length(v);
     return v / length;
 }
-inline Vec4 Min(Vec4 const a, Vec4 const b)
+constexpr inline Vec4 Min(Vec4 const a, Vec4 const b)
 {
     return {a.x < b.x ? a.x : b.x, a.y < b.y ? a.y : b.y, a.z < b.z ? a.z : b.z,
             a.w < b.w ? a.w : b.w};
 }
-inline Vec4 Max(Vec4 const a, Vec4 const b)
+constexpr inline Vec4 Max(Vec4 const a, Vec4 const b)
 {
     return {a.x > b.x ? a.x : b.x, a.y > b.y ? a.y : b.y, a.z > b.z ? a.z : b.z,
             a.w > b.w ? a.w : b.w};
 }
-inline Vec4 Lerp(Vec4 const a, Vec4 const b, float const t)
+constexpr inline Vec4 Lerp(Vec4 const a, Vec4 const b, float const t)
 {
     auto const d = b - a;
     return a + (d * t);
 }
 
-inline Vec4 operator-(Vec4 const v)
+constexpr inline Vec4 operator-(Vec4 const v)
 {
     return {-v.x, -v.y, -v.z, -v.w};
 }
 
-inline float Hadd(Vec4 const v)
+constexpr inline float Hadd(Vec4 const v)
 {
     return v.x + v.y + v.z + v.w;
 }
@@ -296,7 +297,7 @@ inline float Hadd(Vec4 const v)
 /*****************************************************************************\
  * Mat3                                                                       *
 \*****************************************************************************/
-inline Mat3 Mat3::Identity()
+constexpr inline Mat3 Mat3::Identity()
 {
     return {
         {1, 0, 0},
@@ -304,7 +305,7 @@ inline Mat3 Mat3::Identity()
         {0, 0, 1},
     };
 }
-inline Mat3 Mat3::Scaling(float const x, float const y, float const z)
+constexpr inline Mat3 Mat3::Scaling(float const x, float const y, float const z)
 {
     return {
         {x, 0, 0},
@@ -371,7 +372,7 @@ inline Mat3 Mat3::RotationAxis(Vec3 const axis, float const rad)
         },
     };
 }
-inline Mat3 operator*(Mat3 const a, Mat3 const b)
+constexpr inline Mat3 operator*(Mat3 const a, Mat3 const b)
 {
     Mat3 m{};
 
@@ -402,7 +403,7 @@ inline Mat3 Transpose(Mat3 m)
     return m;
 }
 
-inline float Determinant(Mat3 const m)
+constexpr inline float Determinant(Mat3 const m)
 {
     float const f0 = m.c0.x * (m.c1.y * m.c2.z - m.c2.y * m.c1.z);
     float const f1 = m.c0.y * -(m.c1.x * m.c2.z - m.c2.x * m.c1.z);
@@ -410,7 +411,7 @@ inline float Determinant(Mat3 const m)
     return f0 + f1 + f2;
 }
 
-inline Mat3 operator*(Mat3 const m, float const f)
+constexpr inline Mat3 operator*(Mat3 const m, float const f)
 {
     return {m.c0 * f, m.c1 * f, m.c2 * f};
 }
@@ -452,7 +453,7 @@ inline Vec3 operator*(Mat3 m, Vec3 const v)
 /*****************************************************************************\
  * Mat4                                                                       *
 \*****************************************************************************/
-inline Mat4 Mat4::Identity()
+constexpr inline Mat4 Mat4::Identity()
 {
     return {
         {1, 0, 0, 0},
@@ -461,7 +462,7 @@ inline Mat4 Mat4::Identity()
         {0, 0, 0, 1},
     };
 }
-inline Mat4 Mat4::Scaling(float const x, float const y, float const z)
+constexpr inline Mat4 Mat4::Scaling(float const x, float const y, float const z)
 {
     return {
         {x, 0, 0, 0},
@@ -536,9 +537,8 @@ inline Mat4 Mat4::RotationAxis(Vec4 const axis, float const rad)
         {0, 0, 0, 1},
     };
 }
-inline Mat4 operator*(Mat4 const a, Mat4 const b)
+constexpr inline Mat4 MultiplyScalar(Mat4 const a, Mat4 const b)
 {
-#if 0
     Mat4 m{};
 
     float const(*const left)[4] = (float(*)[4]) & a.c0.x;
@@ -555,9 +555,9 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
         }
     }
     return m;
-#elif 0
-    Mat4 result;
-
+}
+inline Mat4 MultiplySse(Mat4 const a, Mat4 const b)
+{
     __m128 a_r0 = _mm_load_ps(&a.c0.x);
     __m128 a_r1 = _mm_load_ps(&a.c1.x);
     __m128 a_r2 = _mm_load_ps(&a.c2.x);
@@ -570,6 +570,7 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
     __m128 const b_c2 = _mm_load_ps(&b.c2.x);
     __m128 const b_c3 = _mm_load_ps(&b.c3.x);
 
+    Mat4 result;
     // c0
     __m128 x = _mm_mul_ps(a_r0, b_c0);
     __m128 y = _mm_mul_ps(a_r1, b_c0);
@@ -619,16 +620,13 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
     _mm_store_ps(&result.c3.x, t2);
 
     return result;
-#elif 1
-    __m128 a_r0 = _mm_load_ps(&a.c0.x);
-    __m128 a_r1 = _mm_load_ps(&a.c1.x);
-    __m128 a_r2 = _mm_load_ps(&a.c2.x);
-    __m128 a_r3 = _mm_load_ps(&a.c3.x);
-
-    _MM_TRANSPOSE4_PS(a_r0, a_r1, a_r2, a_r3);
-
-    __m256 const a_r0r1 = _mm256_setr_m128(a_r0, a_r1);
-    __m256 const a_r2r3 = _mm256_setr_m128(a_r2, a_r3);
+}
+__forceinline Mat4 MultiplyAvx(Mat4 const& a, Mat4 const& b)
+{
+    __m256 const a_r0r1 = _mm256_setr_ps(a.c0.x, a.c1.x, a.c2.x, a.c3.x,  //
+                                         a.c0.y, a.c1.y, a.c2.y, a.c3.y);
+    __m256 const a_r2r3 = _mm256_setr_ps(a.c0.z, a.c1.z, a.c2.z, a.c3.z,  //
+                                         a.c0.w, a.c1.w, a.c2.w, a.c3.w);
 
     __m128 const b_c0_128 = _mm_load_ps(&b.c0.x);
     __m128 const b_c1_128 = _mm_load_ps(&b.c1.x);
@@ -683,13 +681,13 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
     _mm_store_ps(&result.c3.x, _mm256_extractf128_ps(t2, 1));
 
     return result;
-#elif 1
-    Mat4 result = {};
-
-    __m512 a_r = _mm512_setr_ps(a.c0.x, a.c1.x, a.c2.x, a.c3.x,  //
-                                a.c0.y, a.c1.y, a.c2.y, a.c3.y,  //
-                                a.c0.z, a.c1.z, a.c2.z, a.c3.z,  //
-                                a.c0.w, a.c1.w, a.c2.w, a.c3.w);
+}
+__forceinline Mat4 MultiplyAvx512(Mat4 const& a, Mat4 const& b)
+{
+    __m512 const a_r = _mm512_setr_ps(a.c0.x, a.c1.x, a.c2.x, a.c3.x,  //
+                                      a.c0.y, a.c1.y, a.c2.y, a.c3.y,  //
+                                      a.c0.z, a.c1.z, a.c2.z, a.c3.z,  //
+                                      a.c0.w, a.c1.w, a.c2.w, a.c3.w);
 
     __m128 const b_c0_128 = _mm_load_ps(&b.c0.x);
     __m128 const b_c1_128 = _mm_load_ps(&b.c1.x);
@@ -707,27 +705,10 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
     b_c2 = _mm512_permutexvar_ps(dup128, b_c2);
     b_c3 = _mm512_permutexvar_ps(dup128, b_c3);
 
-    // TEMP
-    __m128 a_r0 = _mm_load_ps(&a.c0.x);
-    __m128 a_r1 = _mm_load_ps(&a.c1.x);
-    __m128 a_r2 = _mm_load_ps(&a.c2.x);
-    __m128 a_r3 = _mm_load_ps(&a.c3.x);
-
-    _MM_TRANSPOSE4_PS(a_r0, a_r1, a_r2, a_r3);
-
-    __m128 x = _mm_mul_ps(a_r0, b_c0_128);
-    __m128 y = _mm_mul_ps(a_r1, b_c0_128);
-    __m128 z = _mm_mul_ps(a_r2, b_c0_128);
-    __m128 w = _mm_mul_ps(a_r3, b_c0_128);
-
-    __m128 t0_ = _mm_hadd_ps(x, y);
-    __m128 t1_ = _mm_hadd_ps(z, w);
-    __m128 t2_ = _mm_hadd_ps(t0_, t1_);
-
-#    pragma warning(disable : 4310)
-
     __m512i const shuff = _mm512_setr_epi32(0, 4, 8, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    Mat4 result;
 
+#pragma warning(disable : 4310)
     // c0
     __m512 xyzw = _mm512_mul_ps(a_r, b_c0);
     __m512 xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
@@ -777,7 +758,10 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
     _mm_store_ps(&result.c3.x, r);
 
     return result;
-#endif
+}
+__forceinline Mat4 operator*(Mat4 const a, Mat4 const b)
+{
+    return MultiplyAvx(a, b);
 }
 inline void TransposeInPlace(Mat4& m)
 {
@@ -794,7 +778,7 @@ inline Mat4 Transpose(Mat4 m)
     return m;
 }
 
-inline float Determinant(Mat4 const m)
+constexpr inline float Determinant(Mat4 const m)
 {
     Mat3 const a = {{m.c1.y, m.c1.z, m.c1.w}, {m.c2.y, m.c2.z, m.c2.w}, {m.c3.y, m.c3.z, m.c3.w}};
 
@@ -812,15 +796,15 @@ inline float Determinant(Mat4 const m)
     return det;
 }
 
-inline Mat4 operator*(Mat4 const m, float const f)
+constexpr inline Mat4 operator*(Mat4 const m, float const f)
 {
     return {m.c0 * f, m.c1 * f, m.c2 * f, m.c3 * f};
 }
 inline Mat4 Inverse(Mat4 mat)
 {
     Mat4 ret;
-    float* inv = (float*)&ret;
-    float* m = (float*)&mat;
+    float* const inv = (float*)&ret;
+    float* const m = (float*)&mat;
 
     inv[0] = m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] +
              m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10];
