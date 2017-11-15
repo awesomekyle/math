@@ -269,7 +269,9 @@ void Mat4Multiplication(benchmark::State& state)
     FillMatrix(m1);
     FillMatrix(m2);
     for (auto _ : state) {
-        benchmark::DoNotOptimize((Matrix)(m1 * m2));
+        for (int ii = 0; ii < kLoopCount; ++ii) {
+            benchmark::DoNotOptimize((Matrix)(m1 * m2));
+        }
     }
 }
 BENCHMARK_TEMPLATE(Mat4Multiplication, XMMATRIX);
@@ -287,7 +289,9 @@ void Mat4VecMultiplication(benchmark::State& state)
     FillVec(v1);
     FillVec(v2);
     for (auto _ : state) {
-        benchmark::DoNotOptimize((Vector)(m1 * v1));
+        for (int ii = 0; ii < kLoopCount; ++ii) {
+            benchmark::DoNotOptimize((Vector)(m1 * v1));
+        }
     }
 }
 
@@ -301,7 +305,9 @@ void Mat4VecMultiplication<XMMATRIX, XMVECTOR>(benchmark::State& state)
     FillVec(v1);
     FillVec(v2);
     for (auto _ : state) {
-        benchmark::DoNotOptimize(XMVector4Transform(v1, m1));
+        for (int ii = 0; ii < kLoopCount; ++ii) {
+            benchmark::DoNotOptimize(XMVector4Transform(v1, m1));
+        }
     }
 }
 BENCHMARK_TEMPLATE(Mat4VecMultiplication, XMMATRIX, XMVECTOR);

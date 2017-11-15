@@ -682,10 +682,11 @@ __forceinline Mat4 MultiplyAvx(Mat4 const& a, Mat4 const& b)
 }
 __forceinline Mat4 MultiplyAvx512(Mat4 const& a, Mat4 const& b)
 {
-    __m512 const a_r = _mm512_setr_ps(a.c0.x, a.c1.x, a.c2.x, a.c3.x,  //
-                                      a.c0.y, a.c1.y, a.c2.y, a.c3.y,  //
-                                      a.c0.z, a.c1.z, a.c2.z, a.c3.z,  //
-                                      a.c0.w, a.c1.w, a.c2.w, a.c3.w);
+    __m512i const transposeMask = _mm512_setr_epi32(0, 4, 8, 12,   //
+                                                    1, 5, 9, 13,   //
+                                                    2, 6, 10, 14,  //
+                                                    3, 7, 11, 15);
+    __m512 const a_r = _mm512_permutexvar_ps(transposeMask, _mm512_load_ps(&a.c0.x));
 
     __m128 const b_c0_128 = _mm_load_ps(&b.c0.x);
     __m128 const b_c1_128 = _mm_load_ps(&b.c1.x);
@@ -759,7 +760,7 @@ __forceinline Mat4 MultiplyAvx512(Mat4 const& a, Mat4 const& b)
 }
 __forceinline Mat4 operator*(Mat4 const& a, Mat4 const& b)
 {
-    return MultiplyAvx(a, b);
+    return MultiplyAvx512(a, b);
 }
 inline void TransposeInPlace(Mat4& m)
 {
