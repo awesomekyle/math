@@ -680,50 +680,50 @@ __forceinline Mat4 MultiplyAvx(Mat4 const& a, Mat4 const& b)
 
     return result;
 }
-__forceinline static Mat4 MultiplyAvx512(Mat4 const in_a, Mat4 const in_b)
+__forceinline static Mat4 MultiplyAvx512(Mat4 const& in_a, Mat4 const& in_b)
 {
-    __m512 const av = _mm512_load_ps(&in_a.c0.x);
-    __m512 const bv = _mm512_load_ps(&in_b.c0.x);
-
-#define makeAMask(offset)                                                                     \
+#define MAKE_A_MASK(offset)                                                                   \
     _mm512_setr_epi32(0 + (4 * offset), 1 + (4 * offset), 2 + (4 * offset), 3 + (4 * offset), \
                       0 + (4 * offset), 1 + (4 * offset), 2 + (4 * offset), 3 + (4 * offset), \
                       0 + (4 * offset), 1 + (4 * offset), 2 + (4 * offset), 3 + (4 * offset), \
                       0 + (4 * offset), 1 + (4 * offset), 2 + (4 * offset), 3 + (4 * offset))
 
-#define makeBMask(offset)                                                                     \
+#define MAKE_B_MASK(offset)                                                                   \
     _mm512_setr_epi32((0 * 4) + offset, (0 * 4) + offset, (0 * 4) + offset, (0 * 4) + offset, \
                       (1 * 4) + offset, (1 * 4) + offset, (1 * 4) + offset, (1 * 4) + offset, \
                       (2 * 4) + offset, (2 * 4) + offset, (2 * 4) + offset, (2 * 4) + offset, \
                       (3 * 4) + offset, (3 * 4) + offset, (3 * 4) + offset, (3 * 4) + offset)
 
-    __m512i am = makeAMask(0);
-    __m512i bm = makeBMask(0);
-    __m512 a = _mm512_permutexvar_ps(am, av);
-    __m512 b = _mm512_permutexvar_ps(bm, bv);
-    __m512 aa = _mm512_mul_ps(a, b);
+    __m512 const av = _mm512_load_ps(&in_a.c0.x);
+    __m512 const bv = _mm512_load_ps(&in_b.c0.x);
 
-    __m512i cm = makeAMask(1);
-    __m512i dm = makeBMask(1);
-    __m512 c = _mm512_permutexvar_ps(cm, av);
-    __m512 d = _mm512_permutexvar_ps(dm, bv);
-    __m512 bb = _mm512_mul_ps(c, d);
+    __m512i const am = MAKE_A_MASK(0);
+    __m512i const bm = MAKE_B_MASK(0);
+    __m512 const a = _mm512_permutexvar_ps(am, av);
+    __m512 const b = _mm512_permutexvar_ps(bm, bv);
+    __m512 const aa = _mm512_mul_ps(a, b);
 
-    __m512i em = makeAMask(2);
-    __m512i fm = makeBMask(2);
-    __m512 e = _mm512_permutexvar_ps(em, av);
-    __m512 f = _mm512_permutexvar_ps(fm, bv);
-    __m512 cc = _mm512_mul_ps(e, f);
+    __m512i const cm = MAKE_A_MASK(1);
+    __m512i const dm = MAKE_B_MASK(1);
+    __m512 const c = _mm512_permutexvar_ps(cm, av);
+    __m512 const d = _mm512_permutexvar_ps(dm, bv);
+    __m512 const bb = _mm512_mul_ps(c, d);
 
-    __m512i gm = makeAMask(3);
-    __m512i hm = makeBMask(3);
-    __m512 g = _mm512_permutexvar_ps(gm, av);
-    __m512 h = _mm512_permutexvar_ps(hm, bv);
-    __m512 dd = _mm512_mul_ps(g, h);
+    __m512i const em = MAKE_A_MASK(2);
+    __m512i const fm = MAKE_B_MASK(2);
+    __m512 const e = _mm512_permutexvar_ps(em, av);
+    __m512 const f = _mm512_permutexvar_ps(fm, bv);
+    __m512 const cc = _mm512_mul_ps(e, f);
 
-    __m512 t0 = _mm512_add_ps(aa, bb);
-    __m512 t1 = _mm512_add_ps(cc, dd);
-    __m512 t2 = _mm512_add_ps(t0, t1);
+    __m512i const gm = MAKE_A_MASK(3);
+    __m512i const hm = MAKE_B_MASK(3);
+    __m512 const g = _mm512_permutexvar_ps(gm, av);
+    __m512 const h = _mm512_permutexvar_ps(hm, bv);
+    __m512 const dd = _mm512_mul_ps(g, h);
+
+    __m512 const t0 = _mm512_add_ps(aa, bb);
+    __m512 const t1 = _mm512_add_ps(cc, dd);
+    __m512 const t2 = _mm512_add_ps(t0, t1);
 
     Mat4 result;
     _mm512_store_ps(&result.c0.x, t2);

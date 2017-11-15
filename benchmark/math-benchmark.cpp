@@ -269,8 +269,9 @@ void Mat4Multiplication(benchmark::State& state)
     FillMatrix(m1);
     FillMatrix(m2);
     for (auto _ : state) {
-        // for (int ii = 0; ii < kLoopCount; ++ii)
-        benchmark::DoNotOptimize((Matrix)(m1 * m2));
+        for (int ii = 0; ii < kLoopCount; ++ii) {
+            benchmark::DoNotOptimize((Matrix)(m1 * m2));
+        }
     }
 }
 BENCHMARK_TEMPLATE(Mat4Multiplication, XMMATRIX);
