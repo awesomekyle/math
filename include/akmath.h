@@ -619,7 +619,7 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
     _mm_store_ps(&result.c3.x, t2);
 
     return result;
-#elif 1
+#elif 0
     Mat4 result = {};
 
     __m128 a_r0 = _mm_load_ps(&a.c0.x);
@@ -700,6 +700,100 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
     t1 = _mm256_permutevar8x32_ps(t1, mask);
 
     _mm_store_ps(&result.c3.x, _mm256_extractf128_ps(t1, 0));
+
+    return result;
+#elif 1
+    Mat4 result = {};
+
+    __m512 a_r = _mm512_setr_ps(a.c0.x, a.c1.x, a.c2.x, a.c3.x,  //
+                                a.c0.y, a.c1.y, a.c2.y, a.c3.y,  //
+                                a.c0.z, a.c1.z, a.c2.z, a.c3.z,  //
+                                a.c0.w, a.c1.w, a.c2.w, a.c3.w);
+
+    __m128 const b_c0_128 = _mm_load_ps(&b.c0.x);
+    __m128 const b_c1_128 = _mm_load_ps(&b.c1.x);
+    __m128 const b_c2_128 = _mm_load_ps(&b.c2.x);
+    __m128 const b_c3_128 = _mm_load_ps(&b.c3.x);
+
+    __m512 b_c0 = _mm512_castps128_ps512(b_c0_128);
+    __m512 b_c1 = _mm512_castps128_ps512(b_c1_128);
+    __m512 b_c2 = _mm512_castps128_ps512(b_c2_128);
+    __m512 b_c3 = _mm512_castps128_ps512(b_c3_128);
+
+    __m512i const dup128 = _mm512_setr_epi32(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3);
+    b_c0 = _mm512_permutexvar_ps(dup128, b_c0);
+    b_c1 = _mm512_permutexvar_ps(dup128, b_c1);
+    b_c2 = _mm512_permutexvar_ps(dup128, b_c2);
+    b_c3 = _mm512_permutexvar_ps(dup128, b_c3);
+
+    // TEMP
+    __m128 a_r0 = _mm_load_ps(&a.c0.x);
+    __m128 a_r1 = _mm_load_ps(&a.c1.x);
+    __m128 a_r2 = _mm_load_ps(&a.c2.x);
+    __m128 a_r3 = _mm_load_ps(&a.c3.x);
+
+    _MM_TRANSPOSE4_PS(a_r0, a_r1, a_r2, a_r3);
+
+    __m128 x = _mm_mul_ps(a_r0, b_c0_128);
+    __m128 y = _mm_mul_ps(a_r1, b_c0_128);
+    __m128 z = _mm_mul_ps(a_r2, b_c0_128);
+    __m128 w = _mm_mul_ps(a_r3, b_c0_128);
+
+    __m128 t0_ = _mm_hadd_ps(x, y);
+    __m128 t1_ = _mm_hadd_ps(z, w);
+    __m128 t2_ = _mm_hadd_ps(t0_, t1_);
+
+#    pragma warning(disable : 4310)
+
+    __m512i const shuff = _mm512_setr_epi32(0, 4, 8, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+    // c0
+    __m512 xyzw = _mm512_mul_ps(a_r, b_c0);
+    __m512 xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
+
+    __m512 t0 = _mm512_add_ps(xyzw, xyzw_add);
+    __m512 t1 = _mm512_permute_ps(t0, _MM_SHUFFLE(0, 0, 2, 2));
+    __m512 t2 = _mm512_add_ps(t0, t1);
+    __m512 t3 = _mm512_permutexvar_ps(shuff, t2);
+
+    __m128 r = _mm512_extractf32x4_ps(t3, 0);
+    _mm_store_ps(&result.c0.x, r);
+
+    // c1
+    xyzw = _mm512_mul_ps(a_r, b_c1);
+    xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
+
+    t0 = _mm512_add_ps(xyzw, xyzw_add);
+    t1 = _mm512_permute_ps(t0, _MM_SHUFFLE(0, 0, 2, 2));
+    t2 = _mm512_add_ps(t0, t1);
+    t3 = _mm512_permutexvar_ps(shuff, t2);
+
+    r = _mm512_extractf32x4_ps(t3, 0);
+    _mm_store_ps(&result.c1.x, r);
+
+    // c2
+    xyzw = _mm512_mul_ps(a_r, b_c2);
+    xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
+
+    t0 = _mm512_add_ps(xyzw, xyzw_add);
+    t1 = _mm512_permute_ps(t0, _MM_SHUFFLE(0, 0, 2, 2));
+    t2 = _mm512_add_ps(t0, t1);
+    t3 = _mm512_permutexvar_ps(shuff, t2);
+
+    r = _mm512_extractf32x4_ps(t3, 0);
+    _mm_store_ps(&result.c2.x, r);
+
+    // c3
+    xyzw = _mm512_mul_ps(a_r, b_c3);
+    xyzw_add = _mm512_permute_ps(xyzw, _MM_SHUFFLE(3, 3, 1, 1));
+
+    t0 = _mm512_add_ps(xyzw, xyzw_add);
+    t1 = _mm512_permute_ps(t0, _MM_SHUFFLE(0, 0, 2, 2));
+    t2 = _mm512_add_ps(t0, t1);
+    t3 = _mm512_permutexvar_ps(shuff, t2);
+
+    r = _mm512_extractf32x4_ps(t3, 0);
+    _mm_store_ps(&result.c3.x, r);
 
     return result;
 #endif
