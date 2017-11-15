@@ -2,6 +2,8 @@
 #include <benchmark/benchmark.h>
 #include <glm/glm.hpp>
 #include <DirectXMath.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
 
 namespace {
 
@@ -12,7 +14,7 @@ enum {
     kLoopCount = 128,
 };
 
-constexpr float kMinTime = 0.125f;
+constexpr float kMinTime = 0.0125f;
 
 float RandFloat(float const min, float const max)
 {
@@ -196,15 +198,107 @@ void Mat3Inverse(benchmark::State& state)
 }
 BENCHMARK(Mat3Inverse);
 
-void DxMat4Inverse(benchmark::State& state)
+void FillMatrix(DirectX::XMMATRIX& m)
 {
-    DirectX::XMMATRIX const m =
-        XMMatrixSet(RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+    m = XMMatrixSet(RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
                     RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
                     RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
                     RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
                     RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
                     RandFloat(-50.0f, 50.0f));
+}
+void FillMatrix(ak::Mat4& m)
+{
+    m = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+}
+void FillMatrix(glm::mat4& m)
+{
+    m = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+}
+void FillMatrix(Eigen::Matrix4f& m)
+{
+    m << RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+        RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+        RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+        RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+        RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+        RandFloat(-50.0f, 50.0f);
+}
+
+void DxMat4Multiplication(benchmark::State& state)
+{
+    DirectX::XMMATRIX m1, m2;
+    FillMatrix(m1);
+    FillMatrix(m2);
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize(m1 * m2);
+        }
+    }
+}
+BENCHMARK(DxMat4Multiplication);
+
+void GlmMat4Multiplication(benchmark::State& state)
+{
+    glm::mat4 m1, m2;
+    FillMatrix(m1);
+    FillMatrix(m2);
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize(m1 * m2);
+        }
+    }
+}
+BENCHMARK(GlmMat4Multiplication);
+
+void EigenMat4Multiplication(benchmark::State& state)
+{
+    Eigen::Matrix4f m1, m2;
+    FillMatrix(m1);
+    FillMatrix(m2);
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize((Eigen::Matrix4f)(m1 * m2));
+        }
+    }
+}
+BENCHMARK(EigenMat4Multiplication);
+
+void Mat4Multiplication(benchmark::State& state)
+{
+    ak::Mat4 m1, m2;
+    FillMatrix(m1);
+    FillMatrix(m2);
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize(m1 * m2);
+        }
+    }
+}
+BENCHMARK(Mat4Multiplication);
+
+void DxMat4Inverse(benchmark::State& state)
+{
+    DirectX::XMMATRIX m;
+    FillMatrix(m);
     for (auto _ : state) {
         for (int ii = 0; ii < kLoopCount / 4; ++ii) {
             benchmark::DoNotOptimize(XMMatrixInverse(nullptr, m));
@@ -215,16 +309,8 @@ BENCHMARK(DxMat4Inverse);
 
 void GlmMat4Inverse(benchmark::State& state)
 {
-    glm::mat4 const m = {
-        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
-         RandFloat(-50.0f, 50.0f)},
-        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
-         RandFloat(-50.0f, 50.0f)},
-        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
-         RandFloat(-50.0f, 50.0f)},
-        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
-         RandFloat(-50.0f, 50.0f)},
-    };
+    glm::mat4 m;
+    FillMatrix(m);
     for (auto _ : state) {
         for (int ii = 0; ii < kLoopCount / 4; ++ii) {
             benchmark::DoNotOptimize(glm::inverse(m));
@@ -233,18 +319,22 @@ void GlmMat4Inverse(benchmark::State& state)
 }
 BENCHMARK(GlmMat4Inverse);
 
+void EigenMat4Inverse(benchmark::State& state)
+{
+    Eigen::Matrix4f m;
+    FillMatrix(m);
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize((Eigen::Matrix4f)m.inverse());
+        }
+    }
+}
+BENCHMARK(EigenMat4Inverse);
+
 void Mat4Inverse(benchmark::State& state)
 {
-    ak::Mat4 const m = {
-        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
-         RandFloat(-50.0f, 50.0f)},
-        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
-         RandFloat(-50.0f, 50.0f)},
-        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
-         RandFloat(-50.0f, 50.0f)},
-        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
-         RandFloat(-50.0f, 50.0f)},
-    };
+    ak::Mat4 m;
+    FillMatrix(m);
     for (auto _ : state) {
         for (int ii = 0; ii < kLoopCount / 4; ++ii) {
             benchmark::DoNotOptimize(ak::Inverse(m));

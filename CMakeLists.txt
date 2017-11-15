@@ -17,6 +17,7 @@ include(CTest)
 find_package(catch)
 find_package(glm)
 find_package(benchmark)
+find_package(eigen)
 
 ######################
 # Source             #
