@@ -12,7 +12,7 @@ enum {
     kLoopCount = 128,
 };
 
-constexpr float kMinTime = 0.25f;
+constexpr float kMinTime = 0.125f;
 
 float RandFloat(float const min, float const max)
 {
@@ -195,5 +195,62 @@ void Mat3Inverse(benchmark::State& state)
     }
 }
 BENCHMARK(Mat3Inverse);
+
+void DxMat4Inverse(benchmark::State& state)
+{
+    DirectX::XMMATRIX const m =
+        XMMatrixSet(RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f));
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize(XMMatrixInverse(nullptr, m));
+        }
+    }
+}
+BENCHMARK(DxMat4Inverse);
+
+void GlmMat4Inverse(benchmark::State& state)
+{
+    glm::mat4 const m = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize(glm::inverse(m));
+        }
+    }
+}
+BENCHMARK(GlmMat4Inverse);
+
+void Mat4Inverse(benchmark::State& state)
+{
+    ak::Mat4 const m = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize(ak::Inverse(m));
+        }
+    }
+}
+BENCHMARK(Mat4Inverse);
 
 }  // namespace
