@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+#include <immintrin.h>
 
 namespace ak {
 
@@ -537,6 +538,7 @@ inline Mat4 Mat4::RotationAxis(Vec4 const axis, float const rad)
 }
 inline Mat4 operator*(Mat4 const a, Mat4 const b)
 {
+#if 0
     Mat4 m{};
 
     float const(*const left)[4] = (float(*)[4]) & a.c0.x;
@@ -553,6 +555,153 @@ inline Mat4 operator*(Mat4 const a, Mat4 const b)
         }
     }
     return m;
+#elif 0
+    Mat4 result;
+
+    __m128 a_r0 = _mm_load_ps(&a.c0.x);
+    __m128 a_r1 = _mm_load_ps(&a.c1.x);
+    __m128 a_r2 = _mm_load_ps(&a.c2.x);
+    __m128 a_r3 = _mm_load_ps(&a.c3.x);
+
+    _MM_TRANSPOSE4_PS(a_r0, a_r1, a_r2, a_r3);
+
+    __m128 b_c0 = _mm_load_ps(&b.c0.x);
+    __m128 b_c1 = _mm_load_ps(&b.c1.x);
+    __m128 b_c2 = _mm_load_ps(&b.c2.x);
+    __m128 b_c3 = _mm_load_ps(&b.c3.x);
+
+    // c0
+    __m128 x = _mm_mul_ps(a_r0, b_c0);
+    __m128 y = _mm_mul_ps(a_r1, b_c0);
+    __m128 z = _mm_mul_ps(a_r2, b_c0);
+    __m128 w = _mm_mul_ps(a_r3, b_c0);
+
+    __m128 t0 = _mm_hadd_ps(x, y);
+    __m128 t1 = _mm_hadd_ps(z, w);
+    __m128 t2 = _mm_hadd_ps(t0, t1);
+
+    _mm_store_ps(&result.c0.x, t2);
+
+    // c1
+    x = _mm_mul_ps(a_r0, b_c1);
+    y = _mm_mul_ps(a_r1, b_c1);
+    z = _mm_mul_ps(a_r2, b_c1);
+    w = _mm_mul_ps(a_r3, b_c1);
+
+    t0 = _mm_hadd_ps(x, y);
+    t1 = _mm_hadd_ps(z, w);
+    t2 = _mm_hadd_ps(t0, t1);
+
+    _mm_store_ps(&result.c1.x, t2);
+
+    // c2
+    x = _mm_mul_ps(a_r0, b_c2);
+    y = _mm_mul_ps(a_r1, b_c2);
+    z = _mm_mul_ps(a_r2, b_c2);
+    w = _mm_mul_ps(a_r3, b_c2);
+
+    t0 = _mm_hadd_ps(x, y);
+    t1 = _mm_hadd_ps(z, w);
+    t2 = _mm_hadd_ps(t0, t1);
+
+    _mm_store_ps(&result.c2.x, t2);
+
+    // c3
+    x = _mm_mul_ps(a_r0, b_c3);
+    y = _mm_mul_ps(a_r1, b_c3);
+    z = _mm_mul_ps(a_r2, b_c3);
+    w = _mm_mul_ps(a_r3, b_c3);
+
+    t0 = _mm_hadd_ps(x, y);
+    t1 = _mm_hadd_ps(z, w);
+    t2 = _mm_hadd_ps(t0, t1);
+
+    _mm_store_ps(&result.c3.x, t2);
+
+    return result;
+#elif 1
+    Mat4 result = {};
+
+    __m128 a_r0 = _mm_load_ps(&a.c0.x);
+    __m128 a_r1 = _mm_load_ps(&a.c1.x);
+    __m128 a_r2 = _mm_load_ps(&a.c2.x);
+    __m128 a_r3 = _mm_load_ps(&a.c3.x);
+
+    _MM_TRANSPOSE4_PS(a_r0, a_r1, a_r2, a_r3);
+
+    __m256 a_r0r1 = _mm256_castps128_ps256(a_r0);
+    a_r0r1 = _mm256_insertf128_ps(a_r0r1, a_r1, 1);
+
+    __m256 a_r2r3 = _mm256_castps128_ps256(a_r2);
+    a_r2r3 = _mm256_insertf128_ps(a_r2r3, a_r3, 1);
+
+    __m128 b_c0_128 = _mm_load_ps(&b.c0.x);
+    __m128 b_c1_128 = _mm_load_ps(&b.c1.x);
+    __m128 b_c2_128 = _mm_load_ps(&b.c2.x);
+    __m128 b_c3_128 = _mm_load_ps(&b.c3.x);
+
+    __m256 b_c0 = _mm256_castps128_ps256(b_c0_128);
+    __m256 b_c1 = _mm256_castps128_ps256(b_c1_128);
+    __m256 b_c2 = _mm256_castps128_ps256(b_c2_128);
+    __m256 b_c3 = _mm256_castps128_ps256(b_c3_128);
+
+    b_c0 = _mm256_insertf128_ps(b_c0, b_c0_128, 1);
+    b_c1 = _mm256_insertf128_ps(b_c1, b_c1_128, 1);
+    b_c2 = _mm256_insertf128_ps(b_c2, b_c2_128, 1);
+    b_c3 = _mm256_insertf128_ps(b_c3, b_c3_128, 1);
+
+    __m256i const mask = _mm256_setr_epi32(0, 1, 4, 5, 2, 3, 6, 7);
+
+    // c0
+    __m256 xy = _mm256_mul_ps(a_r0r1, b_c0);
+    __m256 zw = _mm256_mul_ps(a_r2r3, b_c0);
+
+    __m256 t0 = _mm256_hadd_ps(xy, zw);
+
+    t0 = _mm256_permutevar8x32_ps(t0, mask);
+    __m256 t1 = _mm256_hadd_ps(t0, t0);
+    t1 = _mm256_permutevar8x32_ps(t1, mask);
+
+    _mm_store_ps(&result.c0.x, _mm256_extractf128_ps(t1, 0));
+
+    // c1
+    xy = _mm256_mul_ps(a_r0r1, b_c1);
+    zw = _mm256_mul_ps(a_r2r3, b_c1);
+
+    t0 = _mm256_hadd_ps(xy, zw);
+    t0 = _mm256_permutevar8x32_ps(t0, mask);
+
+    t1 = _mm256_hadd_ps(t0, t0);
+    t1 = _mm256_permutevar8x32_ps(t1, mask);
+
+    _mm_store_ps(&result.c1.x, _mm256_extractf128_ps(t1, 0));
+
+    // c2
+    xy = _mm256_mul_ps(a_r0r1, b_c2);
+    zw = _mm256_mul_ps(a_r2r3, b_c2);
+
+    t0 = _mm256_hadd_ps(xy, zw);
+    t0 = _mm256_permutevar8x32_ps(t0, mask);
+
+    t1 = _mm256_hadd_ps(t0, t0);
+    t1 = _mm256_permutevar8x32_ps(t1, mask);
+
+    _mm_store_ps(&result.c2.x, _mm256_extractf128_ps(t1, 0));
+
+    // c3
+    xy = _mm256_mul_ps(a_r0r1, b_c3);
+    zw = _mm256_mul_ps(a_r2r3, b_c3);
+
+    t0 = _mm256_hadd_ps(xy, zw);
+    t0 = _mm256_permutevar8x32_ps(t0, mask);
+
+    t1 = _mm256_hadd_ps(t0, t0);
+    t1 = _mm256_permutevar8x32_ps(t1, mask);
+
+    _mm_store_ps(&result.c3.x, _mm256_extractf128_ps(t1, 0));
+
+    return result;
+#endif
 }
 inline void TransposeInPlace(Mat4& m)
 {

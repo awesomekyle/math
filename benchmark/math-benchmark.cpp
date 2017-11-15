@@ -61,6 +61,7 @@ void FillVec(ak::Vec4& v)
 }
 
 //-----------------------------------------------------------------------------
+#if 0
 template<class Vector>
 void VecAddition(benchmark::State& state)
 {
@@ -150,6 +151,8 @@ BENCHMARK_TEMPLATE(VecDivision, ak::Vec3)->MinTime(kMinTime);
 
 BENCHMARK_TEMPLATE(VecDivision, glm::vec4)->MinTime(kMinTime);
 BENCHMARK_TEMPLATE(VecDivision, ak::Vec4)->MinTime(kMinTime);
+
+#endif
 
 void DxMat3Inverse(benchmark::State& state)
 {
