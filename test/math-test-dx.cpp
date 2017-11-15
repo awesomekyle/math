@@ -102,7 +102,8 @@ inline bool operator==(const DirectX::XMMATRIX& x, const ak::Mat4& k)
 
     float const* const pX = &xmFloat._11;
     float const* const pK = &k.c0.x;
-    for (int ii = 0; ii < sizeof(k) / sizeof(k.c0.x); ++ii) {
+    constexpr int numFloats = sizeof(k) / sizeof(k.c0.x);
+    for (int ii = 0; ii < numFloats; ++ii) {
         if (pX[ii] != Approx(pK[ii])) {
             return false;
         }
@@ -596,9 +597,10 @@ TEST_CASE("DirectXMath - mat4 arithmatic", "[mat4]")
         float const x = RandFloat(-50.0f, 50.0f);
         float const y = RandFloat(-50.0f, 50.0f);
         float const z = RandFloat(-50.0f, 50.0f);
+        float const w = RandFloat(-50.0f, 50.0f);
 
-        XMVECTOR const u = XMVectorSet(x, y, z, 0);
-        ak::Vec4 const v{x, y, z};
+        XMVECTOR const u = XMVectorSet(x, y, z, w);
+        ak::Vec4 const v{x, y, z, w};
         REQUIRE(u == v);
 
         CHECK(XMVector4Transform(u, a) == i * v);

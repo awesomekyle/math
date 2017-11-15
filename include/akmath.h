@@ -589,31 +589,110 @@ inline float Determinant(Mat4 const m)
 
 inline Mat4 operator*(Mat4 const m, float const f)
 {
-    return {m.c0 * f, m.c1 * f, m.c2 * f};
+    return {m.c0 * f, m.c1 * f, m.c2 * f, m.c3 * f};
 }
-inline Mat4 Inverse(Mat4 m)
+inline Mat4 Inverse(Mat4 mat)
 {
-    float const det = Determinant(m);
-    m = {
+    /* row 1 */
+    Mat3 a{{mat.c1.y, mat.c1.z, mat.c1.w},
+           {mat.c2.y, mat.c2.z, mat.c2.w},
+           {mat.c3.y, mat.c3.z, mat.c3.w}};
+
+    Mat3 b{{mat.c1.x, mat.c1.z, mat.c1.w},
+           {mat.c2.x, mat.c2.z, mat.c2.w},
+           {mat.c3.x, mat.c3.z, mat.c3.w}};
+
+    Mat3 c{{mat.c1.x, mat.c1.y, mat.c1.w},
+           {mat.c2.x, mat.c2.y, mat.c2.w},
+           {mat.c3.x, mat.c3.y, mat.c3.w}};
+
+    Mat3 d{{mat.c1.x, mat.c1.y, mat.c1.z},
+           {mat.c2.x, mat.c2.y, mat.c2.z},
+           {mat.c3.x, mat.c3.y, mat.c3.z}};
+
+    /* row 2 */
+    Mat3 e{{mat.c0.y, mat.c0.z, mat.c0.w},
+           {mat.c2.y, mat.c2.z, mat.c2.w},
+           {mat.c3.y, mat.c3.z, mat.c3.w}};
+
+    Mat3 f{{mat.c0.x, mat.c0.z, mat.c0.w},
+           {mat.c2.x, mat.c2.z, mat.c2.w},
+           {mat.c3.x, mat.c3.z, mat.c3.w}};
+
+    Mat3 g{{mat.c0.x, mat.c0.y, mat.c0.w},
+           {mat.c2.x, mat.c2.y, mat.c2.w},
+           {mat.c3.x, mat.c3.y, mat.c3.w}};
+
+    Mat3 h{{mat.c0.x, mat.c0.y, mat.c0.z},
+           {mat.c2.x, mat.c2.y, mat.c2.z},
+           {mat.c3.x, mat.c3.y, mat.c3.z}};
+
+    /* row 3 */
+    Mat3 i{{mat.c0.y, mat.c0.z, mat.c0.w},
+           {mat.c1.y, mat.c1.z, mat.c1.w},
+           {mat.c3.y, mat.c3.z, mat.c3.w}};
+
+    Mat3 j{{mat.c0.x, mat.c0.z, mat.c0.w},
+           {mat.c1.x, mat.c1.z, mat.c1.w},
+           {mat.c3.x, mat.c3.z, mat.c3.w}};
+
+    Mat3 k{{mat.c0.x, mat.c0.y, mat.c0.w},
+           {mat.c1.x, mat.c1.y, mat.c1.w},
+           {mat.c3.x, mat.c3.y, mat.c3.w}};
+
+    Mat3 l{{mat.c0.x, mat.c0.y, mat.c0.z},
+           {mat.c1.x, mat.c1.y, mat.c1.z},
+           {mat.c3.x, mat.c3.y, mat.c3.z}};
+
+    /* row 4 */
+    Mat3 m{{mat.c0.y, mat.c0.z, mat.c0.w},
+           {mat.c1.y, mat.c1.z, mat.c1.w},
+           {mat.c2.y, mat.c2.z, mat.c2.w}};
+
+    Mat3 n{{mat.c0.x, mat.c0.z, mat.c0.w},
+           {mat.c1.x, mat.c1.z, mat.c1.w},
+           {mat.c2.x, mat.c2.z, mat.c2.w}};
+
+    Mat3 o{{mat.c0.x, mat.c0.y, mat.c0.w},
+           {mat.c1.x, mat.c1.y, mat.c1.w},
+           {mat.c2.x, mat.c2.y, mat.c2.w}};
+
+    Mat3 p{{mat.c0.x, mat.c0.y, mat.c0.z},
+           {mat.c1.x, mat.c1.y, mat.c1.z},
+           {mat.c2.x, mat.c2.y, mat.c2.z}};
+
+    /* row 1 */
+    Mat4 ret = {
         {
-            (m.c1.y * m.c2.z) - (m.c1.z * m.c2.y),
-            -((m.c1.x * m.c2.z) - (m.c1.z * m.c2.x)),
-            (m.c1.x * m.c2.y) - (m.c1.y * m.c2.x),
+            Determinant(a),
+            -Determinant(b),
+            Determinant(c),
+            -Determinant(d),
         },
         {
-            -((m.c0.y * m.c2.z) - (m.c0.z * m.c2.y)),
-            (m.c0.x * m.c2.z) - (m.c0.z * m.c2.x),
-            -((m.c0.x * m.c2.y) - (m.c0.y * m.c2.x)),
+            -Determinant(e),
+            Determinant(f),
+            -Determinant(g),
+            Determinant(h),
         },
         {
-            (m.c0.y * m.c1.z) - (m.c0.z * m.c1.y),
-            -((m.c0.x * m.c1.z) - (m.c0.z * m.c1.x)),
-            (m.c0.x * m.c1.y) - (m.c0.y * m.c1.x),
+            Determinant(i),
+            -Determinant(j),
+            Determinant(k),
+            -Determinant(l),
+        },
+        {
+            -Determinant(m),
+            Determinant(n),
+            -Determinant(o),
+            Determinant(p),
         },
     };
 
-    TransposeInPlace(m);
-    return m * (1.0f / det);
+    TransposeInPlace(ret);
+    float const recip = 1.0f / Determinant(mat);
+    ret = ret * recip;
+    return ret;
 }
 
 inline Vec4 operator*(Mat4 m, Vec4 const v)
