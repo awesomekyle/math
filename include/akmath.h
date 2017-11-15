@@ -36,6 +36,13 @@ struct Mat3
     inline static Mat3 RotationAxis(Vec3 const axis, float const rad);
 };
 
+inline void _swapf(float& a, float& b)
+{
+    float const t = a;
+    a = b;
+    b = t;
+}
+
 /*****************************************************************************\
  * Vec2                                                                       *
 \*****************************************************************************/
@@ -187,6 +194,10 @@ inline Vec3 Cross(Vec3 const a, Vec3 const b)
         a.z * b.x - a.x * b.z,
         a.x * b.y - a.y * b.x,
     };
+}
+inline float Hadd(Vec3 const v)
+{
+    return v.x + v.y + v.z;
 }
 
 /*****************************************************************************\
@@ -357,6 +368,67 @@ inline Mat3 operator*(Mat3 const a, Mat3 const b)
         }
     }
     return m;
+}
+inline void TransposeInPlace(Mat3& m)
+{
+    _swapf(m.c0.y, m.c1.x);
+    _swapf(m.c0.z, m.c2.x);
+    _swapf(m.c1.z, m.c2.y);
+}
+inline Mat3 Transpose(Mat3 const m)
+{
+    Mat3 result = m;
+    _swapf(result.c0.y, result.c1.x);
+    _swapf(result.c0.z, result.c2.x);
+    _swapf(result.c1.z, result.c2.y);
+    return result;
+}
+
+inline float Determinant(Mat3 const m)
+{
+    float const f0 = m.c0.x * (m.c1.y * m.c2.z - m.c2.y * m.c1.z);
+    float const f1 = m.c0.y * -(m.c1.x * m.c2.z - m.c2.x * m.c1.z);
+    float const f2 = m.c0.z * (m.c1.x * m.c2.y - m.c2.x * m.c1.y);
+    return f0 + f1 + f2;
+}
+
+inline Mat3 operator*(Mat3 const m, float const f)
+{
+    return {m.c0 * f, m.c1 * f, m.c2 * f};
+}
+inline Mat3 Inverse(Mat3 const m)
+{
+    float const det = Determinant(m);
+    Mat3 inv = {
+        {
+            (m.c1.y * m.c2.z) - (m.c1.z * m.c2.y),
+            -((m.c1.x * m.c2.z) - (m.c1.z * m.c2.x)),
+            (m.c1.x * m.c2.y) - (m.c1.y * m.c2.x),
+        },
+        {
+            -((m.c0.y * m.c2.z) - (m.c0.z * m.c2.y)),
+            (m.c0.x * m.c2.z) - (m.c0.z * m.c2.x),
+            -((m.c0.x * m.c2.y) - (m.c0.y * m.c2.x)),
+        },
+        {
+            (m.c0.y * m.c1.z) - (m.c0.z * m.c1.y),
+            -((m.c0.x * m.c1.z) - (m.c0.z * m.c1.x)),
+            (m.c0.x * m.c1.y) - (m.c0.y * m.c1.x),
+        },
+    };
+
+    inv = Transpose(inv);
+    return inv * (1.0f / det);
+}
+
+inline Vec3 operator*(Mat3 m, Vec3 const v)
+{
+    TransposeInPlace(m);
+    return {
+        Hadd(m.c0 * v),
+        Hadd(m.c1 * v),
+        Hadd(m.c2 * v),
+    };
 }
 
 }  // namespace ak

@@ -1,23 +1,8 @@
 #include "akmath.h"
+#include "catch-output.h"
+
 #include <iostream>
 #include <DirectXMath.h>
-
-namespace DirectX {
-
-std::ostream& operator<<(std::ostream& os, XMMATRIX const& value)
-{
-    float const(*const pValue)[4] = (float(*)[4]) & value;
-    os << "{ " << pValue[0][0] << ", " << pValue[0][1] << ", " << pValue[0][2] << ", "
-       << pValue[0][3] << " }\n";
-    os << "{ " << pValue[1][0] << ", " << pValue[1][1] << ", " << pValue[1][2] << ", "
-       << pValue[1][3] << " }\n";
-    os << "{ " << pValue[2][0] << ", " << pValue[2][1] << ", " << pValue[2][2] << ", "
-       << pValue[2][3] << " }\n";
-    os << "{ " << pValue[3][0] << ", " << pValue[3][1] << ", " << pValue[3][2] << ", "
-       << pValue[3][3] << " }";
-    return os;
-}
-}  // namespace DirectX
 
 #include <catch.hpp>
 
@@ -55,8 +40,8 @@ DirectX::XMVECTOR XmFromAk(const ak::Vec3& v)
 
 inline bool operator==(const DirectX::XMVECTOR& x, const ak::Vec3& k)
 {
-    return DirectX::XMVectorGetX(x) == k.x && DirectX::XMVectorGetY(x) == k.y &&
-           DirectX::XMVectorGetZ(x) == k.z;
+    return DirectX::XMVectorGetX(x) == Approx(k.x) && DirectX::XMVectorGetY(x) == Approx(k.y) &&
+           DirectX::XMVectorGetZ(x) == Approx(k.z);
 }
 inline bool operator==(const ak::Vec3& k, const DirectX::XMVECTOR& x)
 {
@@ -468,5 +453,29 @@ TEST_CASE("DirectXMath - mat3 arithmatic", "[mat3]")
         auto const m1 = b * a;
         auto const m2 = i * j;
         REQUIRE(m1 == m2);
+    }
+    SECTION("transpose")
+    {
+        REQUIRE(XMMatrixTranspose(a) == ak::Transpose(i));
+    }
+    SECTION("determinant")
+    {
+        REQUIRE(XMVectorGetX(XMMatrixDeterminant(a)) == Approx(ak::Determinant(i)));
+    }
+    SECTION("inverse")
+    {
+        REQUIRE(XMMatrixInverse(nullptr, a) == ak::Inverse(i));
+    }
+    SECTION("vector multiplication")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+
+        XMVECTOR const u = XMVectorSet(x, y, z, 0);
+        ak::Vec3 const v{x, y, z};
+        REQUIRE(u == v);
+
+        CHECK(XMVector3Transform(u, a) == i * v);
     }
 }

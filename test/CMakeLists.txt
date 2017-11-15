@@ -7,6 +7,8 @@ list(APPEND SOURCES
     ${PROJECT_SOURCE_DIR}/include/akmath.h
     math-test.cpp
     math-test-glm.cpp
+
+    catch-output.h
 )
 
 if(MSVC)

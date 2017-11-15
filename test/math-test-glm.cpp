@@ -1,32 +1,10 @@
 #include "akmath.h"
-#include <iostream>
-
-namespace ak {
-
-std::ostream& operator<<(std::ostream& os, ak::Mat3 const& value)
-{
-    os << "{ " << value.c0.x << ", " << value.c0.y << ", " << value.c0.z << " }\n";
-    os << "{ " << value.c1.x << ", " << value.c1.y << ", " << value.c1.z << " }\n";
-    os << "{ " << value.c2.x << ", " << value.c2.y << ", " << value.c2.z << " }";
-    return os;
-}
-
-}  // namespace ak
+#include "catch-output.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-namespace glm {
-std::ostream& operator<<(std::ostream& os, glm::mat3 const& value)
-{
-    os << "{ " << value[0][0] << ", " << value[0][1] << ", " << value[0][2] << " }\n";
-    os << "{ " << value[1][0] << ", " << value[1][1] << ", " << value[1][2] << " }\n";
-    os << "{ " << value[2][0] << ", " << value[2][1] << ", " << value[2][2] << " }";
-    return os;
-}
-}  // namespace glm
 
 #include <catch.hpp>
 
@@ -482,5 +460,29 @@ TEST_CASE("GLM - mat3 arithmatic", "[mat3]")
         auto const m1 = a * b;
         auto const m2 = i * j;
         CHECK(m1 == m2);
+    }
+    SECTION("transpose")
+    {
+        REQUIRE(glm::transpose(a) == ak::Transpose(i));
+    }
+    SECTION("determinant")
+    {
+        REQUIRE(glm::determinant(a) == Approx(ak::Determinant(i)));
+    }
+    SECTION("inverse")
+    {
+        REQUIRE(glm::inverse(a) == ak::Inverse(i));
+    }
+    SECTION("vector multiplication")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+
+        glm::vec3 const u{x, y, z};
+        ak::Vec3 const v{x, y, z};
+        REQUIRE(u == v);
+
+        CHECK(a * u == i * v);
     }
 }
