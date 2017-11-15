@@ -12,23 +12,13 @@ enum {
     kLoopCount = 128,
 };
 
+constexpr float kMinTime = 0.25f;
+
 float RandFloat(float const min, float const max)
 {
     float f = rand() / static_cast<float>(RAND_MAX);
     f *= (max - min);
     return f + min;
-}
-DirectX::XMVECTOR XmFromAk(const ak::Vec2& v)
-{
-    return DirectX::XMVectorSet(v.x, v.y, 0.0f, 0.0f);
-}
-DirectX::XMVECTOR XmFromAk(const ak::Vec3& v)
-{
-    return DirectX::XMVectorSet(v.x, v.y, v.z, 0.0f);
-}
-DirectX::XMVECTOR XmFromAk(const ak::Vec4& v)
-{
-    return DirectX::XMVectorSet(v.x, v.y, v.z, v.w);
 }
 
 // DX
@@ -119,44 +109,91 @@ void VecDivision(benchmark::State& state)
     }
 }
 
-BENCHMARK_TEMPLATE(VecAddition, XMVECTOR);
-BENCHMARK_TEMPLATE(VecAddition, glm::vec2);
-BENCHMARK_TEMPLATE(VecAddition, ak::Vec2);
+BENCHMARK_TEMPLATE(VecAddition, XMVECTOR)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecAddition, glm::vec2)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecAddition, ak::Vec2)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecAddition, glm::vec3);
-BENCHMARK_TEMPLATE(VecAddition, ak::Vec3);
+BENCHMARK_TEMPLATE(VecAddition, glm::vec3)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecAddition, ak::Vec3)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecAddition, glm::vec4);
-BENCHMARK_TEMPLATE(VecAddition, ak::Vec4);
+BENCHMARK_TEMPLATE(VecAddition, glm::vec4)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecAddition, ak::Vec4)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecSubtraction, XMVECTOR);
-BENCHMARK_TEMPLATE(VecSubtraction, glm::vec2);
-BENCHMARK_TEMPLATE(VecSubtraction, ak::Vec2);
+BENCHMARK_TEMPLATE(VecSubtraction, XMVECTOR)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecSubtraction, glm::vec2)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecSubtraction, ak::Vec2)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecSubtraction, glm::vec3);
-BENCHMARK_TEMPLATE(VecSubtraction, ak::Vec3);
+BENCHMARK_TEMPLATE(VecSubtraction, glm::vec3)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecSubtraction, ak::Vec3)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecSubtraction, glm::vec4);
-BENCHMARK_TEMPLATE(VecSubtraction, ak::Vec4);
+BENCHMARK_TEMPLATE(VecSubtraction, glm::vec4)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecSubtraction, ak::Vec4)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecMultiplication, XMVECTOR);
-BENCHMARK_TEMPLATE(VecMultiplication, glm::vec2);
-BENCHMARK_TEMPLATE(VecMultiplication, ak::Vec2);
+BENCHMARK_TEMPLATE(VecMultiplication, XMVECTOR)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecMultiplication, glm::vec2)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecMultiplication, ak::Vec2)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecMultiplication, glm::vec3);
-BENCHMARK_TEMPLATE(VecMultiplication, ak::Vec3);
+BENCHMARK_TEMPLATE(VecMultiplication, glm::vec3)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecMultiplication, ak::Vec3)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecMultiplication, glm::vec4);
-BENCHMARK_TEMPLATE(VecMultiplication, ak::Vec4);
+BENCHMARK_TEMPLATE(VecMultiplication, glm::vec4)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecMultiplication, ak::Vec4)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecDivision, XMVECTOR);
-BENCHMARK_TEMPLATE(VecDivision, glm::vec2);
-BENCHMARK_TEMPLATE(VecDivision, ak::Vec2);
+BENCHMARK_TEMPLATE(VecDivision, XMVECTOR)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecDivision, glm::vec2)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecDivision, ak::Vec2)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecDivision, glm::vec3);
-BENCHMARK_TEMPLATE(VecDivision, ak::Vec3);
+BENCHMARK_TEMPLATE(VecDivision, glm::vec3)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecDivision, ak::Vec3)->MinTime(kMinTime);
 
-BENCHMARK_TEMPLATE(VecDivision, glm::vec4);
-BENCHMARK_TEMPLATE(VecDivision, ak::Vec4);
+BENCHMARK_TEMPLATE(VecDivision, glm::vec4)->MinTime(kMinTime);
+BENCHMARK_TEMPLATE(VecDivision, ak::Vec4)->MinTime(kMinTime);
+
+void DxMat3Inverse(benchmark::State& state)
+{
+    DirectX::XMMATRIX const m =
+        XMMatrixSet(RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+                    RandFloat(-50.0f, 50.0f));
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize(XMMatrixInverse(nullptr, m));
+        }
+    }
+}
+BENCHMARK(DxMat3Inverse);
+
+void GlmMat3Inverse(benchmark::State& state)
+{
+    glm::mat3 const m = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+    };
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize(glm::inverse(m));
+        }
+    }
+}
+BENCHMARK(GlmMat3Inverse);
+
+void Mat3Inverse(benchmark::State& state)
+{
+    ak::Mat3 const m = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f)},
+    };
+    for (auto _ : state) {
+        for (int ii = 0; ii < kLoopCount / 4; ++ii) {
+            benchmark::DoNotOptimize(ak::Inverse(m));
+        }
+    }
+}
+BENCHMARK(Mat3Inverse);
 
 }  // namespace

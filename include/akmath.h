@@ -396,10 +396,10 @@ inline Mat3 operator*(Mat3 const m, float const f)
 {
     return {m.c0 * f, m.c1 * f, m.c2 * f};
 }
-inline Mat3 Inverse(Mat3 const m)
+inline Mat3 Inverse(Mat3 m)
 {
     float const det = Determinant(m);
-    Mat3 inv = {
+    m = {
         {
             (m.c1.y * m.c2.z) - (m.c1.z * m.c2.y),
             -((m.c1.x * m.c2.z) - (m.c1.z * m.c2.x)),
@@ -417,8 +417,8 @@ inline Mat3 Inverse(Mat3 const m)
         },
     };
 
-    inv = Transpose(inv);
-    return inv * (1.0f / det);
+    TransposeInPlace(m);
+    return m * (1.0f / det);
 }
 
 inline Vec3 operator*(Mat3 m, Vec3 const v)
