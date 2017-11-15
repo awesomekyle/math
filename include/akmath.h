@@ -707,26 +707,22 @@ __forceinline static Mat4 MultiplyAvx512(Mat4 const& in_a, Mat4 const& in_b)
     __m512i const dm = MAKE_B_MASK(1);
     __m512 const c = _mm512_permutexvar_ps(cm, av);
     __m512 const d = _mm512_permutexvar_ps(dm, bv);
-    __m512 const bb = _mm512_mul_ps(c, d);
+    __m512 const bb = _mm512_fmadd_ps(c, d, aa);
 
     __m512i const em = MAKE_A_MASK(2);
     __m512i const fm = MAKE_B_MASK(2);
     __m512 const e = _mm512_permutexvar_ps(em, av);
     __m512 const f = _mm512_permutexvar_ps(fm, bv);
-    __m512 const cc = _mm512_mul_ps(e, f);
+    __m512 const cc = _mm512_fmadd_ps(e, f, bb);
 
     __m512i const gm = MAKE_A_MASK(3);
     __m512i const hm = MAKE_B_MASK(3);
     __m512 const g = _mm512_permutexvar_ps(gm, av);
     __m512 const h = _mm512_permutexvar_ps(hm, bv);
-    __m512 const dd = _mm512_mul_ps(g, h);
-
-    __m512 const t0 = _mm512_add_ps(aa, bb);
-    __m512 const t1 = _mm512_add_ps(cc, dd);
-    __m512 const t2 = _mm512_add_ps(t0, t1);
+    __m512 const dd = _mm512_fmadd_ps(g, h, cc);
 
     Mat4 result;
-    _mm512_store_ps(&result.c0.x, t2);
+    _mm512_store_ps(&result.c0.x, dd);
 
     return result;
 }
