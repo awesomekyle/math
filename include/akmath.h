@@ -22,6 +22,20 @@ struct Vec4
     float w;
 };
 
+struct Mat3
+{
+    Vec3 c0;
+    Vec3 c1;
+    Vec3 c2;
+
+    inline static Mat3 Identity();
+    inline static Mat3 Scaling(float const x, float const y, float const z);
+    inline static Mat3 RotationX(float const rad);
+    inline static Mat3 RotationY(float const rad);
+    inline static Mat3 RotationZ(float const rad);
+    inline static Mat3 RotationAxis(Vec3 const axis, float const rad);
+};
+
 /*****************************************************************************\
  * Vec2                                                                       *
 \*****************************************************************************/
@@ -245,6 +259,97 @@ inline Vec4 Lerp(Vec4 const a, Vec4 const b, float const t)
 inline Vec4 operator-(Vec4 const v)
 {
     return {-v.x, -v.y, -v.z, -v.w};
+}
+
+/*****************************************************************************\
+ * Mat3                                                                       *
+\*****************************************************************************/
+inline Mat3 Mat3::Identity()
+{
+    return {
+        {1, 0, 0},
+        {0, 1, 0},
+        {0, 0, 1},
+    };
+}
+inline Mat3 Mat3::Scaling(float const x, float const y, float const z)
+{
+    return {
+        {x, 0, 0},
+        {0, y, 0},
+        {0, 0, z},
+    };
+}
+inline Mat3 Mat3::RotationX(float const rad)
+{
+    float const c = cosf(rad);
+    float const s = sinf(rad);
+    return {
+        {1, 0, 0},
+        {0, c, -s},
+        {0, s, c},
+    };
+}
+inline Mat3 Mat3::RotationY(float const rad)
+{
+    float const c = cosf(rad);
+    float const s = sinf(rad);
+    return {
+        {c, 0, s},
+        {0, 1, 0},
+        {-s, 0, c},
+    };
+}
+inline Mat3 Mat3::RotationZ(float const rad)
+{
+    float const c = cosf(rad);
+    float const s = sinf(rad);
+    return {
+        {c, -s, 0},
+        {s, c, 0},
+        {0, 0, 1},
+    };
+}
+inline Mat3 Mat3::RotationAxis(Vec3 const axis, float const rad)
+{
+    Vec3 const normAxis = Normalize(axis);
+    float const c = cosf(rad);
+    float const s = sinf(rad);
+    float const t = 1.0f - c;
+
+    float const x = normAxis.x;
+    float const y = normAxis.y;
+    float const z = normAxis.z;
+
+    return {
+        {(t * x * x) + c, (t * x * y) - (s * z), (t * x * z) + (s * y)},
+        {(t * x * y) + s * z, (t * y * y) + c, (t * y * z) - (s * x)},
+        {(t * x * z) - s * y, (t * y * z) + (s * x), (t * z * z) + c},
+    };
+}
+inline Mat3 operator*(Mat3 const a, Mat3 const b)
+{
+#define MTX3_INDEX(f, r, c) ((f)[(r * 3) + c])
+
+    Mat3 m{};
+
+    const float* left = &a.c0.x;
+    const float* right = &b.c0.x;
+    float* result = (float*)&m;
+
+    for (int ii = 0; ii < 3; ++ii) /* row */
+    {
+        for (int jj = 0; jj < 3; ++jj) /* column */
+        {
+            float sum = MTX3_INDEX(left, ii, 0) * MTX3_INDEX(right, 0, jj);
+            for (int kk = 1; kk < 3; ++kk) {
+                sum += (MTX3_INDEX(left, ii, kk) * MTX3_INDEX(right, kk, jj));
+            }
+            MTX3_INDEX(result, ii, jj) = sum;
+        }
+    }
+    return m;
+#undef MTX3_INDEX
 }
 
 }  // namespace ak
