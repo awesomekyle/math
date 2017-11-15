@@ -11,11 +11,18 @@ list(APPEND SOURCES
 if(MSVC)
     list(APPEND SOURCES
         # math_test_dx.cpp
+        math-test-dx.cpp
     )
 endif()
 
 ak_add_catchtest(math-test ${SOURCES})
+
 target_include_directories(math-test
     PRIVATE
         ${PROJECT_SOURCE_DIR}/include
+)
+
+target_link_libraries(math-test
+    PRIVATE
+        glm
 )

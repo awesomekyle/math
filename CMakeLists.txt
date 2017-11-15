@@ -15,6 +15,7 @@ include(targets)
 include(CTest)
 
 find_package(catch)
+find_package(glm)
 find_package(benchmark)
 
 ######################
