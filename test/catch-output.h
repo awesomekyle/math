@@ -56,6 +56,18 @@ inline std::ostream& operator<<(std::ostream& os, ak::Mat3 const& value)
     os << "{ " << value.c2.x << ", " << value.c2.y << ", " << value.c2.z << " }";
     return os;
 }
+inline std::ostream& operator<<(std::ostream& os, ak::Mat4 const& value)
+{
+    os << "{ " << value.c0.x << ", " << value.c0.y << ", " << value.c0.z << ", " << value.c0.w
+       << " }\n";
+    os << "{ " << value.c1.x << ", " << value.c1.y << ", " << value.c1.z << ", " << value.c1.w
+       << " }\n";
+    os << "{ " << value.c2.x << ", " << value.c2.y << ", " << value.c2.z << ", " << value.c2.w
+       << " }\n";
+    os << "{ " << value.c3.x << ", " << value.c3.y << ", " << value.c3.z << ", " << value.c3.w
+       << " }";
+    return os;
+}
 inline std::ostream& operator<<(std::ostream& os, ak::Vec3 const& value)
 {
     os << "{ " << value.x << ", " << value.y << ", " << value.z << " }";

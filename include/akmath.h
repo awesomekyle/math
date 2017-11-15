@@ -36,6 +36,21 @@ struct Mat3
     inline static Mat3 RotationAxis(Vec3 const axis, float const rad);
 };
 
+struct Mat4
+{
+    Vec4 c0;
+    Vec4 c1;
+    Vec4 c2;
+    Vec4 c3;
+
+    inline static Mat4 Identity();
+    inline static Mat4 Scaling(float const x, float const y, float const z);
+    inline static Mat4 RotationX(float const rad);
+    inline static Mat4 RotationY(float const rad);
+    inline static Mat4 RotationZ(float const rad);
+    inline static Mat4 RotationAxis(Vec4 const axis, float const rad);
+};
+
 inline void _swapf(float& a, float& b)
 {
     float const t = a;
@@ -272,6 +287,11 @@ inline Vec4 operator-(Vec4 const v)
     return {-v.x, -v.y, -v.z, -v.w};
 }
 
+inline float Hadd(Vec4 const v)
+{
+    return v.x + v.y + v.z + v.w;
+}
+
 /*****************************************************************************\
  * Mat3                                                                       *
 \*****************************************************************************/
@@ -375,13 +395,10 @@ inline void TransposeInPlace(Mat3& m)
     _swapf(m.c0.z, m.c2.x);
     _swapf(m.c1.z, m.c2.y);
 }
-inline Mat3 Transpose(Mat3 const m)
+inline Mat3 Transpose(Mat3 m)
 {
-    Mat3 result = m;
-    _swapf(result.c0.y, result.c1.x);
-    _swapf(result.c0.z, result.c2.x);
-    _swapf(result.c1.z, result.c2.y);
-    return result;
+    TransposeInPlace(m);
+    return m;
 }
 
 inline float Determinant(Mat3 const m)
@@ -428,6 +445,185 @@ inline Vec3 operator*(Mat3 m, Vec3 const v)
         Hadd(m.c0 * v),
         Hadd(m.c1 * v),
         Hadd(m.c2 * v),
+    };
+}
+
+/*****************************************************************************\
+ * Mat4                                                                       *
+\*****************************************************************************/
+inline Mat4 Mat4::Identity()
+{
+    return {
+        {1, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 0, 1, 0},
+        {0, 0, 0, 1},
+    };
+}
+inline Mat4 Mat4::Scaling(float const x, float const y, float const z)
+{
+    return {
+        {x, 0, 0, 0},
+        {0, y, 0, 0},
+        {0, 0, z, 0},
+        {0, 0, 0, 1},
+    };
+}
+inline Mat4 Mat4::RotationX(float const rad)
+{
+    float const c = cosf(rad);
+    float const s = sinf(rad);
+    return {
+        {1, 0, 0, 0},
+        {0, c, s, 0},
+        {0, -s, c, 0},
+        {0, 0, 0, 1},
+    };
+}
+inline Mat4 Mat4::RotationY(float const rad)
+{
+    float const c = cosf(rad);
+    float const s = sinf(rad);
+    return {
+        {c, 0, -s, 0},
+        {0, 1, 0, 0},
+        {s, 0, c, 0},
+        {0, 0, 0, 1},
+    };
+}
+inline Mat4 Mat4::RotationZ(float const rad)
+{
+    float const c = cosf(rad);
+    float const s = sinf(rad);
+    return {
+        {c, s, 0, 0},
+        {-s, c, 0, 0},
+        {0, 0, 1, 0},
+        {0, 0, 0, 1},
+    };
+}
+inline Mat4 Mat4::RotationAxis(Vec4 const axis, float const rad)
+{
+    Vec4 const normAxis = Normalize(axis);
+    float const c = cosf(rad);
+    float const s = sinf(rad);
+    float const t = 1.0f - c;
+
+    float const x = normAxis.x;
+    float const y = normAxis.y;
+    float const z = normAxis.z;
+
+    return {
+        {
+            (t * x * x) + c,
+            (t * x * y) + s * z,
+            (t * x * z) - s * y,
+            0,
+        },
+        {
+            (t * x * y) - (s * z),
+            (t * y * y) + c,
+            (t * y * z) + (s * x),
+            0,
+        },
+        {
+            (t * x * z) + (s * y),
+            (t * y * z) - (s * x),
+            (t * z * z) + c,
+            0,
+        },
+        {0, 0, 0, 1},
+    };
+}
+inline Mat4 operator*(Mat4 const a, Mat4 const b)
+{
+    Mat4 m{};
+
+    float const(*const left)[4] = (float(*)[4]) & a.c0.x;
+    float const(*const right)[4] = (float(*)[4]) & b.c0.x;
+    float(*result)[4] = (float(*)[4]) & m;
+
+    for (int ii = 0; ii < 4; ++ii) /* column */
+    {
+        for (int jj = 0; jj < 4; ++jj) /* row */
+        {
+            for (int kk = 0; kk < 4; ++kk) {
+                result[jj][ii] += (left[kk][ii] * right[jj][kk]);
+            }
+        }
+    }
+    return m;
+}
+inline void TransposeInPlace(Mat4& m)
+{
+    _swapf(m.c0.y, m.c1.x);
+    _swapf(m.c0.z, m.c2.x);
+    _swapf(m.c0.w, m.c3.x);
+    _swapf(m.c1.z, m.c2.y);
+    _swapf(m.c1.w, m.c3.y);
+    _swapf(m.c2.w, m.c3.z);
+}
+inline Mat4 Transpose(Mat4 m)
+{
+    TransposeInPlace(m);
+    return m;
+}
+
+inline float Determinant(Mat4 const m)
+{
+    Mat3 const a = {{m.c1.y, m.c1.z, m.c1.w}, {m.c2.y, m.c2.z, m.c2.w}, {m.c3.y, m.c3.z, m.c3.w}};
+
+    Mat3 const b = {{m.c1.x, m.c1.z, m.c1.w}, {m.c2.x, m.c2.z, m.c2.w}, {m.c3.x, m.c3.z, m.c3.w}};
+
+    Mat3 const c = {{m.c1.x, m.c1.y, m.c1.w}, {m.c2.x, m.c2.y, m.c2.w}, {m.c3.x, m.c3.y, m.c3.w}};
+
+    Mat3 const d = {{m.c1.x, m.c1.y, m.c1.z}, {m.c2.x, m.c2.y, m.c2.z}, {m.c3.x, m.c3.y, m.c3.z}};
+
+    float det = 0.0f;
+    det += m.c0.x * Determinant(a);
+    det -= m.c0.y * Determinant(b);
+    det += m.c0.z * Determinant(c);
+    det -= m.c0.w * Determinant(d);
+    return det;
+}
+
+inline Mat4 operator*(Mat4 const m, float const f)
+{
+    return {m.c0 * f, m.c1 * f, m.c2 * f};
+}
+inline Mat4 Inverse(Mat4 m)
+{
+    float const det = Determinant(m);
+    m = {
+        {
+            (m.c1.y * m.c2.z) - (m.c1.z * m.c2.y),
+            -((m.c1.x * m.c2.z) - (m.c1.z * m.c2.x)),
+            (m.c1.x * m.c2.y) - (m.c1.y * m.c2.x),
+        },
+        {
+            -((m.c0.y * m.c2.z) - (m.c0.z * m.c2.y)),
+            (m.c0.x * m.c2.z) - (m.c0.z * m.c2.x),
+            -((m.c0.x * m.c2.y) - (m.c0.y * m.c2.x)),
+        },
+        {
+            (m.c0.y * m.c1.z) - (m.c0.z * m.c1.y),
+            -((m.c0.x * m.c1.z) - (m.c0.z * m.c1.x)),
+            (m.c0.x * m.c1.y) - (m.c0.y * m.c1.x),
+        },
+    };
+
+    TransposeInPlace(m);
+    return m * (1.0f / det);
+}
+
+inline Vec4 operator*(Mat4 m, Vec4 const v)
+{
+    TransposeInPlace(m);
+    return {
+        Hadd(m.c0 * v),
+        Hadd(m.c1 * v),
+        Hadd(m.c2 * v),
+        Hadd(m.c3 * v),
     };
 }
 

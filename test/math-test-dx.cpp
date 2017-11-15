@@ -87,6 +87,29 @@ inline bool operator==(const DirectX::XMMATRIX& x, const ak::Mat3& k)
     return true;
 }
 
+// mat4
+DirectX::XMMATRIX XmFromAk(const ak::Mat4& m)
+{
+    return XMMatrixSet(m.c0.x, m.c0.y, m.c0.z, m.c0.w,  //
+                       m.c1.x, m.c1.y, m.c1.z, m.c1.w,  //
+                       m.c2.x, m.c2.y, m.c2.z, m.c2.w,  //
+                       m.c3.x, m.c3.y, m.c3.z, m.c3.w);
+}
+inline bool operator==(const DirectX::XMMATRIX& x, const ak::Mat4& k)
+{
+    XMFLOAT4X4 xmFloat = {};
+    XMStoreFloat4x4(&xmFloat, x);
+
+    float const* const pX = &xmFloat._11;
+    float const* const pK = &k.c0.x;
+    for (int ii = 0; ii < sizeof(k) / sizeof(k.c0.x); ++ii) {
+        if (pX[ii] != Approx(pK[ii])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 }  // namespace
 
 TEST_CASE("DirectXMath - vec2 arithmatic", "[vec2]")
@@ -477,5 +500,107 @@ TEST_CASE("DirectXMath - mat3 arithmatic", "[mat3]")
         REQUIRE(u == v);
 
         CHECK(XMVector3Transform(u, a) == i * v);
+    }
+}
+
+TEST_CASE("DirectXMath - mat4 arithmatic", "[mat4]")
+{
+    ak::Mat4 const i = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+    ak::Mat4 const j = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+    ak::Mat4 const k = {
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+        {RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f), RandFloat(-50.0f, 50.0f),
+         RandFloat(-50.0f, 50.0f)},
+    };
+
+    DirectX::XMMATRIX const a = XmFromAk(i);
+    DirectX::XMMATRIX const b = XmFromAk(j);
+    DirectX::XMMATRIX const c = XmFromAk(k);
+    float const scalar = RandFloat(-50.0f, 50.0f);
+
+    REQUIRE(a == i);
+    REQUIRE(b == j);
+    REQUIRE(c == k);
+
+    SECTION("identity")
+    {
+        REQUIRE(XMMatrixIdentity() == ak::Mat4::Identity());
+    }
+
+    SECTION("scale")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+        REQUIRE(XMMatrixScaling(x, y, z) == ak::Mat4::Scaling(x, y, z));
+    }
+
+    SECTION("rotation")
+    {
+        float const r = RandFloat(-50.0f, 50.0f);
+        REQUIRE(XMMatrixRotationX(r) == ak::Mat4::RotationX(r));
+        REQUIRE(XMMatrixRotationY(r) == ak::Mat4::RotationY(r));
+        REQUIRE(XMMatrixRotationZ(r) == ak::Mat4::RotationZ(r));
+    }
+    SECTION("axis rotation")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+        auto const xmRotation = XMMatrixRotationAxis(XMVectorSet(x, y, z, 0), scalar);
+        REQUIRE(xmRotation == ak::Mat4::RotationAxis({x, y, z}, scalar));
+    }
+    SECTION("multiplication")
+    {
+        auto const m1 = b * a;
+        auto const m2 = i * j;
+        REQUIRE(m1 == m2);
+    }
+    SECTION("transpose")
+    {
+        REQUIRE(XMMatrixTranspose(a) == ak::Transpose(i));
+    }
+    SECTION("determinant")
+    {
+        REQUIRE(XMVectorGetX(XMMatrixDeterminant(a)) == Approx(ak::Determinant(i)));
+    }
+    SECTION("inverse")
+    {
+        REQUIRE(XMMatrixInverse(nullptr, a) == ak::Inverse(i));
+    }
+    SECTION("vector multiplication")
+    {
+        float const x = RandFloat(-50.0f, 50.0f);
+        float const y = RandFloat(-50.0f, 50.0f);
+        float const z = RandFloat(-50.0f, 50.0f);
+
+        XMVECTOR const u = XMVectorSet(x, y, z, 0);
+        ak::Vec4 const v{x, y, z};
+        REQUIRE(u == v);
+
+        CHECK(XMVector4Transform(u, a) == i * v);
     }
 }
