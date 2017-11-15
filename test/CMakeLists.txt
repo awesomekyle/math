@@ -1,11 +1,21 @@
-set(SOURCES 
-	${PROJECT_SOURCE_DIR}/src/vec_math.h
-	math_test.cpp
-	math_test_c.c
-	math_test_glm.cpp)
+list(APPEND SOURCES
+    ${PROJECT_SOURCE_DIR}/include/vec_math.h
+    # math_test.cpp
+    # math_test_c.c
+    # math_test_glm.cpp
+
+    ${PROJECT_SOURCE_DIR}/include/akmath.h
+    math-test.cpp
+)
 
 if(MSVC)
-	set(SOURCES ${SOURCES} math_test_dx.cpp)
+    list(APPEND SOURCES
+        # math_test_dx.cpp
+    )
 endif()
 
-add_gmock_test(MathTest ${SOURCES})
+ak_add_catchtest(MathTest ${SOURCES})
+target_include_directories(MathTest
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+)
