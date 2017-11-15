@@ -593,106 +593,67 @@ inline Mat4 operator*(Mat4 const m, float const f)
 }
 inline Mat4 Inverse(Mat4 mat)
 {
-    /* row 1 */
-    Mat3 a{{mat.c1.y, mat.c1.z, mat.c1.w},
-           {mat.c2.y, mat.c2.z, mat.c2.w},
-           {mat.c3.y, mat.c3.z, mat.c3.w}};
+    Mat4 ret;
+    float* inv = (float*)&ret;
+    float* m = (float*)&mat;
 
-    Mat3 b{{mat.c1.x, mat.c1.z, mat.c1.w},
-           {mat.c2.x, mat.c2.z, mat.c2.w},
-           {mat.c3.x, mat.c3.z, mat.c3.w}};
+    inv[0] = m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] +
+             m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10];
 
-    Mat3 c{{mat.c1.x, mat.c1.y, mat.c1.w},
-           {mat.c2.x, mat.c2.y, mat.c2.w},
-           {mat.c3.x, mat.c3.y, mat.c3.w}};
+    inv[4] = -m[4] * m[10] * m[15] + m[4] * m[11] * m[14] + m[8] * m[6] * m[15] -
+             m[8] * m[7] * m[14] - m[12] * m[6] * m[11] + m[12] * m[7] * m[10];
 
-    Mat3 d{{mat.c1.x, mat.c1.y, mat.c1.z},
-           {mat.c2.x, mat.c2.y, mat.c2.z},
-           {mat.c3.x, mat.c3.y, mat.c3.z}};
+    inv[8] = m[4] * m[9] * m[15] - m[4] * m[11] * m[13] - m[8] * m[5] * m[15] +
+             m[8] * m[7] * m[13] + m[12] * m[5] * m[11] - m[12] * m[7] * m[9];
 
-    /* row 2 */
-    Mat3 e{{mat.c0.y, mat.c0.z, mat.c0.w},
-           {mat.c2.y, mat.c2.z, mat.c2.w},
-           {mat.c3.y, mat.c3.z, mat.c3.w}};
+    inv[12] = -m[4] * m[9] * m[14] + m[4] * m[10] * m[13] + m[8] * m[5] * m[14] -
+              m[8] * m[6] * m[13] - m[12] * m[5] * m[10] + m[12] * m[6] * m[9];
 
-    Mat3 f{{mat.c0.x, mat.c0.z, mat.c0.w},
-           {mat.c2.x, mat.c2.z, mat.c2.w},
-           {mat.c3.x, mat.c3.z, mat.c3.w}};
+    inv[1] = -m[1] * m[10] * m[15] + m[1] * m[11] * m[14] + m[9] * m[2] * m[15] -
+             m[9] * m[3] * m[14] - m[13] * m[2] * m[11] + m[13] * m[3] * m[10];
 
-    Mat3 g{{mat.c0.x, mat.c0.y, mat.c0.w},
-           {mat.c2.x, mat.c2.y, mat.c2.w},
-           {mat.c3.x, mat.c3.y, mat.c3.w}};
+    inv[5] = m[0] * m[10] * m[15] - m[0] * m[11] * m[14] - m[8] * m[2] * m[15] +
+             m[8] * m[3] * m[14] + m[12] * m[2] * m[11] - m[12] * m[3] * m[10];
 
-    Mat3 h{{mat.c0.x, mat.c0.y, mat.c0.z},
-           {mat.c2.x, mat.c2.y, mat.c2.z},
-           {mat.c3.x, mat.c3.y, mat.c3.z}};
+    inv[9] = -m[0] * m[9] * m[15] + m[0] * m[11] * m[13] + m[8] * m[1] * m[15] -
+             m[8] * m[3] * m[13] - m[12] * m[1] * m[11] + m[12] * m[3] * m[9];
 
-    /* row 3 */
-    Mat3 i{{mat.c0.y, mat.c0.z, mat.c0.w},
-           {mat.c1.y, mat.c1.z, mat.c1.w},
-           {mat.c3.y, mat.c3.z, mat.c3.w}};
+    inv[13] = m[0] * m[9] * m[14] - m[0] * m[10] * m[13] - m[8] * m[1] * m[14] +
+              m[8] * m[2] * m[13] + m[12] * m[1] * m[10] - m[12] * m[2] * m[9];
 
-    Mat3 j{{mat.c0.x, mat.c0.z, mat.c0.w},
-           {mat.c1.x, mat.c1.z, mat.c1.w},
-           {mat.c3.x, mat.c3.z, mat.c3.w}};
+    inv[2] = m[1] * m[6] * m[15] - m[1] * m[7] * m[14] - m[5] * m[2] * m[15] + m[5] * m[3] * m[14] +
+             m[13] * m[2] * m[7] - m[13] * m[3] * m[6];
 
-    Mat3 k{{mat.c0.x, mat.c0.y, mat.c0.w},
-           {mat.c1.x, mat.c1.y, mat.c1.w},
-           {mat.c3.x, mat.c3.y, mat.c3.w}};
+    inv[6] = -m[0] * m[6] * m[15] + m[0] * m[7] * m[14] + m[4] * m[2] * m[15] -
+             m[4] * m[3] * m[14] - m[12] * m[2] * m[7] + m[12] * m[3] * m[6];
 
-    Mat3 l{{mat.c0.x, mat.c0.y, mat.c0.z},
-           {mat.c1.x, mat.c1.y, mat.c1.z},
-           {mat.c3.x, mat.c3.y, mat.c3.z}};
+    inv[10] = m[0] * m[5] * m[15] - m[0] * m[7] * m[13] - m[4] * m[1] * m[15] +
+              m[4] * m[3] * m[13] + m[12] * m[1] * m[7] - m[12] * m[3] * m[5];
 
-    /* row 4 */
-    Mat3 m{{mat.c0.y, mat.c0.z, mat.c0.w},
-           {mat.c1.y, mat.c1.z, mat.c1.w},
-           {mat.c2.y, mat.c2.z, mat.c2.w}};
+    inv[14] = -m[0] * m[5] * m[14] + m[0] * m[6] * m[13] + m[4] * m[1] * m[14] -
+              m[4] * m[2] * m[13] - m[12] * m[1] * m[6] + m[12] * m[2] * m[5];
 
-    Mat3 n{{mat.c0.x, mat.c0.z, mat.c0.w},
-           {mat.c1.x, mat.c1.z, mat.c1.w},
-           {mat.c2.x, mat.c2.z, mat.c2.w}};
+    inv[3] = -m[1] * m[6] * m[11] + m[1] * m[7] * m[10] + m[5] * m[2] * m[11] -
+             m[5] * m[3] * m[10] - m[9] * m[2] * m[7] + m[9] * m[3] * m[6];
 
-    Mat3 o{{mat.c0.x, mat.c0.y, mat.c0.w},
-           {mat.c1.x, mat.c1.y, mat.c1.w},
-           {mat.c2.x, mat.c2.y, mat.c2.w}};
+    inv[7] = m[0] * m[6] * m[11] - m[0] * m[7] * m[10] - m[4] * m[2] * m[11] + m[4] * m[3] * m[10] +
+             m[8] * m[2] * m[7] - m[8] * m[3] * m[6];
 
-    Mat3 p{{mat.c0.x, mat.c0.y, mat.c0.z},
-           {mat.c1.x, mat.c1.y, mat.c1.z},
-           {mat.c2.x, mat.c2.y, mat.c2.z}};
+    inv[11] = -m[0] * m[5] * m[11] + m[0] * m[7] * m[9] + m[4] * m[1] * m[11] - m[4] * m[3] * m[9] -
+              m[8] * m[1] * m[7] + m[8] * m[3] * m[5];
 
-    /* row 1 */
-    Mat4 ret = {
-        {
-            Determinant(a),
-            -Determinant(b),
-            Determinant(c),
-            -Determinant(d),
-        },
-        {
-            -Determinant(e),
-            Determinant(f),
-            -Determinant(g),
-            Determinant(h),
-        },
-        {
-            Determinant(i),
-            -Determinant(j),
-            Determinant(k),
-            -Determinant(l),
-        },
-        {
-            -Determinant(m),
-            Determinant(n),
-            -Determinant(o),
-            Determinant(p),
-        },
-    };
+    inv[15] = m[0] * m[5] * m[10] - m[0] * m[6] * m[9] - m[4] * m[1] * m[10] + m[4] * m[2] * m[9] +
+              m[8] * m[1] * m[6] - m[8] * m[2] * m[5];
 
-    TransposeInPlace(ret);
-    float const recip = 1.0f / Determinant(mat);
-    ret = ret * recip;
-    return ret;
+    float det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+
+    if (det == 0) {
+        return Mat4();
+    }
+
+    det = 1.0f / det;
+
+    return ret * det;
 }
 
 inline Vec4 operator*(Mat4 m, Vec4 const v)
