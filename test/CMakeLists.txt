@@ -14,8 +14,8 @@ if(MSVC)
     )
 endif()
 
-ak_add_catchtest(MathTest ${SOURCES})
-target_include_directories(MathTest
+ak_add_catchtest(math-test ${SOURCES})
+target_include_directories(math-test
     PRIVATE
         ${PROJECT_SOURCE_DIR}/include
 )

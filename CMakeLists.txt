@@ -14,9 +14,11 @@ include(targets)
 ######################
 include(CTest)
 
-find_package(Catch)
+find_package(catch)
+find_package(benchmark)
 
 ######################
 # Source             #
 ######################
 add_subdirectory(test)
+add_subdirectory(benchmark)
