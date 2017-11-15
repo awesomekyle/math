@@ -769,55 +769,108 @@ constexpr inline Mat4 operator*(Mat4 const m, float const f)
 }
 inline Mat4 InverseScalar(Mat4 const mat)
 {
-    float const* const a = &mat.c0.x;
+    float const* const m = &mat.c0.x;
 
     // build 2x2 determinants
-    float s0 = a[0] * a[5] - a[4] * a[1];
-    float s1 = a[0] * a[6] - a[4] * a[2];
-    float s2 = a[0] * a[7] - a[4] * a[3];
-    float s3 = a[1] * a[6] - a[5] * a[2];
-    float s4 = a[1] * a[7] - a[5] * a[3];
-    float s5 = a[2] * a[7] - a[6] * a[3];
+    float const s[] = {
+        m[0] * m[5] - m[4] * m[1],  //
+        m[0] * m[6] - m[4] * m[2],  //
+        m[0] * m[7] - m[4] * m[3],  //
+        m[1] * m[6] - m[5] * m[2],  //
+        m[1] * m[7] - m[5] * m[3],  //
+        m[2] * m[7] - m[6] * m[3],  //
+    };
 
-    float c5 = a[10] * a[15] - a[14] * a[11];
-    float c4 = a[9] * a[15] - a[13] * a[11];
-    float c3 = a[9] * a[14] - a[13] * a[10];
-    float c2 = a[8] * a[15] - a[12] * a[11];
-    float c1 = a[8] * a[14] - a[12] * a[10];
-    float c0 = a[8] * a[13] - a[12] * a[9];
+    float const c[] = {
+        m[8] * m[13] - m[12] * m[9],    //
+        m[8] * m[14] - m[12] * m[10],   //
+        m[8] * m[15] - m[12] * m[11],   //
+        m[9] * m[14] - m[13] * m[10],   //
+        m[9] * m[15] - m[13] * m[11],   //
+        m[10] * m[15] - m[14] * m[11],  //
+    };
 
     // Should check for 0 determinant
-    float invdet = 1.0f / (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
+    float const invdet =
+        1.0f / (s[0] * c[5] - s[1] * c[4] + s[2] * c[3] + s[3] * c[2] - s[4] * c[1] + s[5] * c[0]);
 
     Mat4 ret;
-    float* const b = &ret.c0.x;
+    float* const r = &ret.c0.x;
 
-    b[0] = (a[5] * c5 - a[6] * c4 + a[7] * c3) * invdet;
-    b[1] = (-a[1] * c5 + a[2] * c4 - a[3] * c3) * invdet;
-    b[2] = (a[13] * s5 - a[14] * s4 + a[15] * s3) * invdet;
-    b[3] = (-a[9] * s5 + a[10] * s4 - a[11] * s3) * invdet;
+    r[0] = (m[5] * c[5] - m[6] * c[4] + m[7] * c[3]) * invdet;
+    r[1] = (-m[1] * c[5] + m[2] * c[4] - m[3] * c[3]) * invdet;
+    r[2] = (m[13] * s[5] - m[14] * s[4] + m[15] * s[3]) * invdet;
+    r[3] = (-m[9] * s[5] + m[10] * s[4] - m[11] * s[3]) * invdet;
 
-    b[4] = (-a[4] * c5 + a[6] * c2 - a[7] * c1) * invdet;
-    b[5] = (a[0] * c5 - a[2] * c2 + a[3] * c1) * invdet;
-    b[6] = (-a[12] * s5 + a[14] * s2 - a[15] * s1) * invdet;
-    b[7] = (a[8] * s5 - a[10] * s2 + a[11] * s1) * invdet;
+    r[4] = (-m[4] * c[5] + m[6] * c[2] - m[7] * c[1]) * invdet;
+    r[5] = (m[0] * c[5] - m[2] * c[2] + m[3] * c[1]) * invdet;
+    r[6] = (-m[12] * s[5] + m[14] * s[2] - m[15] * s[1]) * invdet;
+    r[7] = (m[8] * s[5] - m[10] * s[2] + m[11] * s[1]) * invdet;
 
-    b[8] = (a[4] * c4 - a[5] * c2 + a[7] * c0) * invdet;
-    b[9] = (-a[0] * c4 + a[1] * c2 - a[3] * c0) * invdet;
-    b[10] = (a[12] * s4 - a[13] * s2 + a[15] * s0) * invdet;
-    b[11] = (-a[8] * s4 + a[9] * s2 - a[11] * s0) * invdet;
+    r[8] = (m[4] * c[4] - m[5] * c[2] + m[7] * c[0]) * invdet;
+    r[9] = (-m[0] * c[4] + m[1] * c[2] - m[3] * c[0]) * invdet;
+    r[10] = (m[12] * s[4] - m[13] * s[2] + m[15] * s[0]) * invdet;
+    r[11] = (-m[8] * s[4] + m[9] * s[2] - m[11] * s[0]) * invdet;
 
-    b[12] = (-a[4] * c3 + a[5] * c1 - a[6] * c0) * invdet;
-    b[13] = (a[0] * c3 - a[1] * c1 + a[2] * c0) * invdet;
-    b[14] = (-a[12] * s3 + a[13] * s1 - a[14] * s0) * invdet;
-    b[15] = (a[8] * s3 - a[9] * s1 + a[10] * s0) * invdet;
+    r[12] = (-m[4] * c[3] + m[5] * c[1] - m[6] * c[0]) * invdet;
+    r[13] = (m[0] * c[3] - m[1] * c[1] + m[2] * c[0]) * invdet;
+    r[14] = (-m[12] * s[3] + m[13] * s[1] - m[14] * s[0]) * invdet;
+    r[15] = (m[8] * s[3] - m[9] * s[1] + m[10] * s[0]) * invdet;
 
     return ret;
 }
 
-inline Mat4 InverseSse(Mat4 const /*m*/)
+inline Mat4 InverseAvx(Mat4 const mat)
 {
-    Mat4 ret = {};
+    float const* const m = &mat.c0.x;
+
+    // build 2x2 determinants
+    // build 2x2 determinants
+    float const s[] = {
+        m[0] * m[5] - m[4] * m[1],  //
+        m[0] * m[6] - m[4] * m[2],  //
+        m[0] * m[7] - m[4] * m[3],  //
+        m[1] * m[6] - m[5] * m[2],  //
+        m[1] * m[7] - m[5] * m[3],  //
+        m[2] * m[7] - m[6] * m[3],  //
+    };
+
+    float const c[] = {
+        m[10] * m[15] - m[14] * m[11],  //
+        m[9] * m[15] - m[13] * m[11],   //
+        m[9] * m[14] - m[13] * m[10],   //
+        m[8] * m[15] - m[12] * m[11],   //
+        m[8] * m[14] - m[12] * m[10],   //
+        m[8] * m[13] - m[12] * m[9],    //
+    };
+
+    // Should check for 0 determinant
+    float const invdet =
+        1.0f / (s[0] * c[5] - s[1] * c[4] + s[2] * c[3] + s[3] * c[2] - s[4] * c[1] + s[5] * c[0]);
+
+    Mat4 ret;
+    float* const r = &ret.c0.x;
+
+    r[0] = (m[5] * c[5] - m[6] * c[4] + m[7] * c[3]) * invdet;
+    r[1] = (-m[1] * c[5] + m[2] * c[4] - m[3] * c[3]) * invdet;
+    r[2] = (m[13] * s[5] - m[14] * s[4] + m[15] * s[3]) * invdet;
+    r[3] = (-m[9] * s[5] + m[10] * s[4] - m[11] * s[3]) * invdet;
+
+    r[4] = (-m[4] * c[5] + m[6] * c[2] - m[7] * c[1]) * invdet;
+    r[5] = (m[0] * c[5] - m[2] * c[2] + m[3] * c[1]) * invdet;
+    r[6] = (-m[12] * s[5] + m[14] * s[2] - m[15] * s[1]) * invdet;
+    r[7] = (m[8] * s[5] - m[10] * s[2] + m[11] * s[1]) * invdet;
+
+    r[8] = (m[4] * c[4] - m[5] * c[2] + m[7] * c[0]) * invdet;
+    r[9] = (-m[0] * c[4] + m[1] * c[2] - m[3] * c[0]) * invdet;
+    r[10] = (m[12] * s[4] - m[13] * s[2] + m[15] * s[0]) * invdet;
+    r[11] = (-m[8] * s[4] + m[9] * s[2] - m[11] * s[0]) * invdet;
+
+    r[12] = (-m[4] * c[3] + m[5] * c[1] - m[6] * c[0]) * invdet;
+    r[13] = (m[0] * c[3] - m[1] * c[1] + m[2] * c[0]) * invdet;
+    r[14] = (-m[12] * s[3] + m[13] * s[1] - m[14] * s[0]) * invdet;
+    r[15] = (m[8] * s[3] - m[9] * s[1] + m[10] * s[0]) * invdet;
+
     return ret;
 }
 
